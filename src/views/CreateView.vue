@@ -181,7 +181,8 @@ export default{
             codigoComprobante: '',
             fechaPagado: '',
             importePagado: '',
-            url: 'http://127.0.0.1:5000/crearCaja'
+            url: `${process.env.VUE_APP_API_URL}/crearCaja/`
+
         }
     },
     methods: {

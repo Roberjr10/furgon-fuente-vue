@@ -119,7 +119,7 @@ export default {
     },
 
   getCajasKeyValor(key, valor) {
-  const url = `http://127.0.0.1:5000/buscar/key=${encodeURIComponent(key)}/valor=${encodeURIComponent(valor)}`;
+  const url = ` ${process.env.VUE_APP_API_URL}/buscar/key=${encodeURIComponent(key)}/valor=${encodeURIComponent(valor)}`;
   axios.get(url)
     .then(response => {
       console.log('Response data:', response.data);

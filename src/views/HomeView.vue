@@ -27,11 +27,13 @@ export default {
   async mounted() {
     await this.getCajas();
   },
+ 
+
   methods: {
     async getCajas() {
       try {
         const token = localStorage.getItem('token');
-        const res = await axios.get('http://127.0.0.1:5000/', {
+        const res = await axios.get( `${process.env.VUE_APP_API_URL}/`, {
           headers: {
             Authorization: `Bearer ${token}` // 🔑 Incluye el JWT
           }

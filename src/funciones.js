@@ -15,7 +15,8 @@ export function show_alerta(mensaje, icono, foco=''){
 
 export function confirmar(codigoCaja){
 
-    var url = 'http://127.0.0.1:5000/borrarCaja/'+codigoCaja;
+var url = `${process.env.VUE_APP_API_URL}/borrarCaja/${codigoCaja}`;
+
 
     const swalWithBootstrapButtons = Swal.mixin({
         customClass: {confirmButton: 'btn btn-success m-3', cancelButton: 'btn btn-danger'

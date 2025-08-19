@@ -55,7 +55,7 @@
             <label for="direccion" class="form-label">Dirección</label>
             <div class="input-group">
                 <span class="input-group-text"><i class="fa-solid fa-location-dot"></i></span>
-                <input type="text" id="direccion" v-model="direccion" class="form-control" maxlength="100" placeholder="Dirección del destinatario" required>
+                <textarea type="text" id="direccion" v-model="direccion" class="form-control" maxlength="100" placeholder="Dirección del destinatario" required></textarea>
             </div>
         </div>
 
@@ -91,7 +91,7 @@
             <label for="descripcion" class="form-label">Descripción</label>
             <div class="input-group">
                 <span class="input-group-text"><i class="fa-solid fa-box"></i></span>
-                <input type="text" id="descripcion" v-model="descripcion" class="form-control" maxlength="100" placeholder="Descripción del paquete" required>
+                <textarea type="text" id="descripcion" v-model="descripcion" class="form-control" maxlength="100" placeholder="Descripción del paquete" required></textarea>
             </div>
         </div>
 

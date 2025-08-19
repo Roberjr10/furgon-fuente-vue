@@ -72,7 +72,7 @@
                 </div>
                 <div class="col-12">
                   <label class="form-label">Dirección</label>
-                  <input type="text" class="form-control" :value="caja.direccion" readonly>
+                  <textarea type="text" class="form-control" :value="caja.direccion" readonly></textarea>
                 </div>
                 <div class="col-12 col-sm-6">
                   <label class="form-label">Teléfono destinatario</label>
@@ -93,7 +93,7 @@
                 </div>
                 <div class="col-12">
                   <label class="form-label">Descripción</label>
-                  <input type="text" class="form-control" :value="caja.descripcion" readonly>
+                  <textarea type="text" class="form-control" :value="caja.descripcion" readonly></textarea>
                 </div>
                 <div class="col-12 col-sm-6">
                   <label class="form-label">Pagado</label>

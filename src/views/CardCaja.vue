@@ -29,6 +29,9 @@
 
       <!-- Acciones: no deben abrir el modal de ver -->
       <div class="d-grid gap-2 d-sm-flex justify-content-sm-end mt-3" @click.stop>
+        <button class="btn btn-outline-info" title="Ver foto" @click="verFoto">
+          <i class="fa-solid fa-image"></i> Ver foto
+        </button>
         <router-link
           :to="{ path: 'edit/' + caja.codigoCaja }"
           class="btn btn-outline-warning"
@@ -56,14 +59,6 @@
               <button type="button" class="btn-close btn-close-white" @click="cerrarModal"></button>
             </div>
             <div class="modal-body fs-5">
-
-              <div v-if="cargandoFoto" class="text-center mb-3">
-                <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
-                <span class="text-muted ms-2">Cargando foto...</span>
-              </div>
-              <div v-else-if="fotoUrl" class="text-center mb-3">
-                <img :src="fotoUrl" alt="Foto del paquete" class="foto-detalle img-thumbnail">
-              </div>
 
               <div class="d-flex justify-content-between align-items-center mb-3">
                 <h2 class="mb-0">{{ formatoImporte(caja.importe) }}</h2>
@@ -116,12 +111,51 @@
         </div>
       </div>
 
+      <!-- Lightbox: solo la foto, grande, con opción de descargar -->
+      <div
+        v-if="mostrarLightbox"
+        class="modal fade show d-block"
+        tabindex="-1"
+        style="background-color: rgba(0,0,0,0.7); padding: 35px;"
+        @click.stop
+      >
+        <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-content shadow-lg rounded-4">
+            <div class="modal-header bg-primary text-white">
+              <h4 class="modal-title">Foto de la caja {{ caja.codigoCaja }}</h4>
+              <button type="button" class="btn-close btn-close-white" @click="cerrarLightbox"></button>
+            </div>
+            <div class="modal-body text-center">
+              <div v-if="cargandoFotoLightbox" class="my-4">
+                <div class="spinner-border text-primary" role="status"></div>
+                <p class="text-muted fs-5 mt-2">Cargando foto...</p>
+              </div>
+              <img v-else-if="fotoUrl" :src="fotoUrl" alt="Foto del paquete" class="foto-lightbox img-thumbnail">
+            </div>
+            <div class="modal-footer d-grid gap-2 d-sm-flex justify-content-sm-end">
+              <a
+                v-if="fotoUrl"
+                :href="fotoUrl"
+                :download="'caja-' + caja.codigoCaja + '.jpg'"
+                class="btn btn-success btn-lg"
+              >
+                <i class="fa-solid fa-download"></i> Descargar
+              </a>
+              <button class="btn btn-secondary btn-lg" @click="cerrarLightbox">
+                <i class="fa-solid fa-xmark"></i> Cerrar
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
     </div>
   </div>
 </template>
 
 <script>
 import { obtenerUrlFotoCaja } from '../utilFoto';
+import { show_alerta } from '../funciones';
 
 export default {
   props: {
@@ -131,29 +165,43 @@ export default {
   data() {
     return {
       mostrarModal: false,
+      mostrarLightbox: false,
       fotoUrl: null,
-      cargandoFoto: false
+      fotoIntentada: false,
+      cargandoFotoLightbox: false
     };
   },
   beforeUnmount() {
     if (this.fotoUrl) URL.revokeObjectURL(this.fotoUrl);
   },
   methods: {
-    async abrirModal() {
+    abrirModal() {
       this.mostrarModal = true;
-      if (this.fotoUrl === null && !this.cargandoFoto) {
-        this.cargandoFoto = true;
+    },
+    cerrarModal() {
+      this.mostrarModal = false;
+    },
+    async verFoto() {
+      this.mostrarLightbox = true;
+      if (!this.fotoIntentada) {
+        this.cargandoFotoLightbox = true;
         try {
           this.fotoUrl = await obtenerUrlFotoCaja(this.caja.codigoCaja);
         } catch (error) {
           console.error('Error al cargar la foto:', error);
         } finally {
-          this.cargandoFoto = false;
+          this.fotoIntentada = true;
+          this.cargandoFotoLightbox = false;
         }
       }
+
+      if (!this.fotoUrl) {
+        this.mostrarLightbox = false;
+        show_alerta('Esta caja todavía no tiene foto', 'info');
+      }
     },
-    cerrarModal() {
-      this.mostrarModal = false;
+    cerrarLightbox() {
+      this.mostrarLightbox = false;
     },
     formatoImporte(valor) {
       const n = Number(valor);
@@ -179,9 +227,9 @@ export default {
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15) !important;
 }
 
-.foto-detalle {
+.foto-lightbox {
   max-width: 100%;
-  max-height: 280px;
+  max-height: 60vh;
   object-fit: contain;
 }
 

@@ -60,7 +60,7 @@
     <div v-if="cajas && cajas.length > 0" class="d-block d-md-none">
       <CardCaja
         v-for="(caja, index) in cajas"
-        :key="caja.codigoCaja || index"
+        :key="caja.id || index"
         :caja="caja"
         :index="index"
         @eliminar="eliminar"
@@ -74,7 +74,7 @@
 </template>
 
 <script>
-import { show_alerta } from '../funciones';
+import { show_alerta, confirmar } from '../funciones';
 import axios from 'axios';
 import CardCaja from './CardCaja.vue';
 
@@ -140,9 +140,10 @@ export default {
 },
 
 
-    eliminar(codigoCaja) {
-      // Implementa la lógica de eliminación o llama a tu función confirmar
-      console.log('Eliminar caja con código:', codigoCaja);
+    eliminar(id) {
+      const caja = this.cajas.find(c => c.id === id);
+      const etiqueta = caja ? (caja.codigoCaja || ('#' + caja.id)) : '';
+      confirmar(id, etiqueta);
     }
   }
 };

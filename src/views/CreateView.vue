@@ -10,10 +10,10 @@
     <div class="row g-3">
 
         <div class="col-12">
-            <label for="codigoCaja" class="form-label">Código de la caja</label>
+            <label for="codigoCaja" class="form-label">Código de la caja <span class="text-muted fw-normal">(opcional)</span></label>
             <div class="input-group input-group-lg">
                 <span class="input-group-text"><i class="fa-solid fa-barcode"></i></span>
-                <input ref="primerCampo" type="text" id="codigoCaja" v-model="codigoCaja" class="form-control" maxlength="50" placeholder="Ej: 181-" autofocus enterkeyhint="next" required>
+                <input ref="primerCampo" type="text" id="codigoCaja" v-model="codigoCaja" class="form-control" maxlength="50" placeholder="Déjalo en blanco si aún no lo tienes" autofocus enterkeyhint="next">
             </div>
         </div>
 
@@ -27,6 +27,14 @@
             <div class="input-group input-group-lg">
                 <span class="input-group-text"><i class="fa-solid fa-user"></i></span>
                 <input type="text" id="remitente" v-model="remitente" class="form-control" maxlength="50" placeholder="Nombre del remitente" enterkeyhint="next" required>
+            </div>
+        </div>
+
+        <div class="col-12">
+            <label for="documentoRemitente" class="form-label">Documento del remitente <span class="text-muted fw-normal">(opcional)</span></label>
+            <div class="input-group input-group-lg">
+                <span class="input-group-text"><i class="fa-solid fa-id-card"></i></span>
+                <input type="text" id="documentoRemitente" v-model="documentoRemitente" class="form-control" maxlength="50" placeholder="DNI, cédula, pasaporte..." enterkeyhint="next">
             </div>
         </div>
 
@@ -171,6 +179,7 @@ export default{
         return{
             codigoCaja:'',
             remitente: '',
+            documentoRemitente: '',
             fecha: new Date().toISOString().split('T')[0],
             telefonoRemitente: '',
             destinatario: '',
@@ -225,6 +234,7 @@ export default{
             var parametros = {
                 codigoCaja:this.codigoCaja,
                 remitente: this.remitente,
+                documentoRemitente: this.documentoRemitente,
                 fecha: this.fecha,
                 telefonoRemitente: this.telefonoRemitente,
                 destinatario: this.destinatario,
@@ -237,7 +247,9 @@ export default{
                 fechaPagado: this.yaPagado ? this.fechaPagado : '',
                 importePagado: this.yaPagado ? this.importePagado : 0
             }
-            const subirFoto = this.fotoBlob ? () => subirFotoCaja(this.codigoCaja, this.fotoBlob) : null;
+            const subirFoto = this.fotoBlob
+                ? (creada) => subirFotoCaja(creada.id, this.fotoBlob)
+                : null;
             enviarSolicitud('POST',parametros,this.url,'Caja guardada',subirFoto)
         }
     }

@@ -32,7 +32,7 @@ const routes = [
     meta: { requiereAuth: true } // 🔒 protegida
   },
   {
-    path: '/edit/:codigoCaja',
+    path: '/edit/:id',
     name: 'edit',
     component: EditView,
     meta: { requiereAuth: true } // 🔒 protegida

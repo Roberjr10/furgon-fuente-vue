@@ -29,13 +29,13 @@
   </div>
 
   <div v-else class="row" :style="{ padding: '20px 20px ' + (modoSeleccion && seleccionadas.length ? '110px' : '90px') }">
-    <div class="col-12 col-md-6 col-lg-4" v-for="(caja, index) in cajas" :key="caja.codigoCaja">
+    <div class="col-12 col-md-6 col-lg-4" v-for="(caja, index) in cajas" :key="caja.id">
       <CardCaja
         :caja="caja"
         :index="index"
         :modo-seleccion="modoSeleccion"
-        :seleccionada="seleccionadas.includes(caja.codigoCaja)"
-        :informe-previo="cajasIncluidas[caja.codigoCaja] || null"
+        :seleccionada="seleccionadas.includes(caja.id)"
+        :informe-previo="cajasIncluidas[caja.id] || null"
         @eliminar="eliminar"
         @toggle-seleccion="toggleSeleccion"
       />
@@ -106,8 +106,10 @@ export default {
         this.cargando = false;
       }
     },
-    eliminar(codigoCaja) {
-      confirmar(codigoCaja);
+    eliminar(id) {
+      const caja = this.cajas.find(c => c.id === id);
+      const etiqueta = caja ? (caja.codigoCaja || ('#' + caja.id)) : '';
+      confirmar(id, etiqueta);
     },
     async alternarModoSeleccion() {
       this.modoSeleccion = !this.modoSeleccion;

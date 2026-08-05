@@ -6,7 +6,7 @@
                 <div class="card-body">
 
 
-<form v-on:submit="guardar" class="container py-3">
+<form @submit="guardar" novalidate class="container py-3">
     <div class="row g-3">
 
         <!-- Sección REMITENTE -->
@@ -19,6 +19,14 @@
             <div class="input-group">
                 <span class="input-group-text"><i class="fa-solid fa-user"></i></span>
                 <input type="text" id="remitente" v-model="remitente" class="form-control" maxlength="50" placeholder="Nombre del remitente" required>
+            </div>
+        </div>
+
+        <div class="col-12 col-md-6">
+            <label for="documentoRemitente" class="form-label">Documento del remitente <span class="text-muted fw-normal">(opcional)</span></label>
+            <div class="input-group">
+                <span class="input-group-text"><i class="fa-solid fa-id-card"></i></span>
+                <input type="text" id="documentoRemitente" v-model="documentoRemitente" class="form-control" maxlength="50" placeholder="DNI, cédula, pasaporte...">
             </div>
         </div>
 
@@ -72,19 +80,12 @@
         <div class="col-12 mt-4">
             <h5 class="section-title">Detalles del Paquete</h5>
         </div>
-         
+
         <div class="col-12 col-md-6">
-            <label for="codigoCaja" class="form-label">Código de la caja</label>
+            <label for="codigoCaja" class="form-label">Código de la caja <span class="text-muted fw-normal">(opcional)</span></label>
             <div class="input-group">
                 <span class="input-group-text"><i class="fa-solid fa-barcode"></i></span>
-                <input type="text" id="codigoCaja" v-model="codigoCaja" class="form-control" maxlength="50" placeholder="Ej: 181-" required>
-            </div>
-        </div> 
-           <div class="col-12 col-md-6">
-            <label for="fecha" class="form-label">Fecha</label>
-            <div class="input-group">
-                <span class="input-group-text"><i class="fa-solid fa-calendar-day"></i></span>
-                <input type="date" id="fechaPagado" v-model="fechaPago" class="form-control">
+                <input type="text" id="codigoCaja" v-model="codigoCaja" class="form-control" maxlength="50" placeholder="Ej: 181-001">
             </div>
         </div>
         <div class="col-12">
@@ -130,7 +131,7 @@
             </div>
         </div>
         <div class="col-12 col-md-6">
-            <label for="importe" class="form-label">Importe Pagado</label>
+            <label for="importePagado" class="form-label">Importe Pagado</label>
             <div class="input-group">
                 <span class="input-group-text"><i class="fa-solid fa-dollar-sign"></i></span>
                 <input type="number" id="importePagado" v-model="importePagado" class="form-control" step="0.01" placeholder="Ej: 125.50" required>
@@ -141,14 +142,6 @@
             <div class="input-group">
                 <span class="input-group-text"><i class="fa-solid fa-dollar-sign"></i></span>
                 <input type="number" id="importeCrini" v-model="importeCrini" class="form-control" step="0.01" placeholder="Ej: 100.00" required>
-            </div>
-        </div>
-
-        <div class="col-12 col-md-6">
-            <label for="codigoComprobante" class="form-label">Código comprobante</label>
-            <div class="input-group">
-                <span class="input-group-text"><i class="fa-solid fa-receipt"></i></span>
-                <input type="text" id="codigoComprobante" v-model="codigoComprobante" class="form-control" maxlength="50" placeholder="Código del comprobante" required>
             </div>
         </div>
 
@@ -167,7 +160,7 @@
             </div>
         </div>
     </div>
- 
+
 </template>
  <style>
     .foto-preview {
@@ -195,8 +188,10 @@ import axios from 'axios';
 export default{
     data(){
         return{
+            id: null,
             codigoCaja:'',
             remitente: '',
+            documentoRemitente: '',
             fecha: '',
             telefonoRemitente: '',
             destinatario: '',
@@ -206,7 +201,6 @@ export default{
             pagado:'',
             importe:'',
             importeCrini:'',
-            codigoComprobante: '',
             fechaPagado: '',
             importePagado: '',
             fotoBlob: null,
@@ -218,19 +212,19 @@ export default{
     },
     mounted(){
         const route = useRoute();
-        this.codigoCaja = route.params.codigoCaja;
-        this.urlModificar = this.url+'/modificarCaja/'+this.codigoCaja
-        this.getCaja(this.codigoCaja);
-        this.cargarFotoExistente(this.codigoCaja);
+        this.id = route.params.id;
+        this.urlModificar = this.url+'/modificarCaja/'+this.id
+        this.getCaja(this.id);
+        this.cargarFotoExistente(this.id);
     },
     beforeUnmount(){
         if (this.fotoPreviewUrl) URL.revokeObjectURL(this.fotoPreviewUrl);
     },
     methods: {
-        async cargarFotoExistente(codigoCaja){
+        async cargarFotoExistente(id){
             this.cargandoFoto = true;
             try{
-                this.fotoPreviewUrl = await obtenerUrlFotoCaja(codigoCaja);
+                this.fotoPreviewUrl = await obtenerUrlFotoCaja(id);
             }catch(error){
                 console.error('Error al cargar la foto:', error);
             }finally{
@@ -248,12 +242,12 @@ export default{
                 show_alerta('No se pudo procesar la foto', 'error');
             }
         },
-        getCaja(codigoCaja){
-           
-            axios.get(this.url+'/consultarCaja/'+ codigoCaja).then(
+        getCaja(id){
+            axios.get(this.url+'/consultarCaja/'+ id).then(
                 response => {
-                    this.codigoCaja = response.data['codigoCaja'],
+                    this.codigoCaja = response.data['codigoCaja'] || '',
                     this.remitente = response.data['remitente'],
+                    this.documentoRemitente = response.data['documentoRemitente'] || '',
                     this.fecha = new Date(response.data['fecha']).toISOString().split('T')[0],
                     this.telefonoRemitente= response.data['telefonoRemitente'],
                     this.destinatario= response.data['destinatario'],
@@ -263,75 +257,40 @@ export default{
                     this.pagado= response.data['pagado'],
                     this.importe= response.data['importe'],
                     this.importeCrini= response.data['importeCrini'],
-                    this.codigoComprobante= response.data['codigoComprobante'],
-                    this.fechaPagado = new Date(response.data['fechaPagado']).toISOString().split('T')[0],
+                    this.fechaPagado = response.data['fechaPagado'] ? new Date(response.data['fechaPagado']).toISOString().split('T')[0] : '',
                     this.importePagado = response.data['importePagado']
-                
-                    
+
+
                 }
-               
+
             )
         },
-        guardar(){
+        guardar(event){
             event.preventDefault();
-            
-            
-            if(this.codigoCaja.toString() === ''){
-                show_alerta('Escribe el codigo de la caja', 'warning', 'codigoCaja')
+            const form = event.target;
+            if(!form.checkValidity()){
+                form.reportValidity();
+                return;
             }
-            else if(this.remitente.toString().trim() === ''){
-                show_alerta('Escribe el nombre del remitente', 'warning', 'remitente')
+
+            var parametros = {
+                codigoCaja:this.codigoCaja,
+                remitente: this.remitente,
+                documentoRemitente: this.documentoRemitente,
+                fecha: this.fecha,
+                telefonoRemitente: this.telefonoRemitente,
+                destinatario: this.destinatario,
+                direccion: this.direccion,
+                telefonoDestinatario: this.telefonoDestinatario,
+                descripcion: this.descripcion,
+                pagado: this.pagado,
+                importe: this.importe,
+                importeCrini: this.importeCrini,
+                fechaPagado: this.fechaPagado,
+                importePagado: this.importePagado
             }
-            else if(this.fecha === ''){
-                show_alerta('Escribe la fecha', 'warning', 'fecha')
-            }
-            else if(this.telefonoRemitente === ''){
-                show_alerta('Escribe telefono Remitente', 'warning', 'telefonoRemitente')
-            }
-            else if(this.destinatario=== ''){
-                show_alerta('Escribe el destinatario', 'warning', 'destinatario')
-            }
-            else if(this.direccion === ''){
-                show_alerta('Escribe la direccion', 'warning', 'direccion')
-            }
-            else if(this.telefonoDestinatario === ''){
-                show_alerta('Escribe el telefono Destinatario', 'warning', 'telefonoDestinatario')
-            }
-            else if(this.descripcion === ''){
-                show_alerta('Escribe la descripcion', 'warning', 'descripcion')
-            }
-            else  if(this.pagado=== ''){
-                show_alerta('Selecciona si ha pagado', 'warning', 'pagado')
-            }
-            else if(this.importe === ''){
-                show_alerta('Escribe el importe', 'warning', 'importe')
-            }
-            else if(this.importeCrini === ''){
-                show_alerta('Escribe el importe Crini', 'warning', 'importeCrini')
-            }
-            else if(this.codigoComprobante === ''){
-                show_alerta('Escribe el codigo comprobante', 'warning', 'codigoComprobante')
-            }
-            else{
-                var parametros = {
-                    codigoCaja:this.codigoCaja,
-                    remitente: this.remitente,
-                    fecha: this.fecha,
-                    telefonoRemitente: this.telefonoRemitente,
-                    destinatario: this.destinatario,
-                    direccion: this.direccion,
-                    telefonoDestinatario: this.telefonoDestinatario,
-                    descripcion: this.descripcion,
-                    pagado: this.pagado,
-                    importe: this.importe,
-                    importeCrini: this.importeCrini,
-                    codigoComprobante: this.codigoComprobante,
-                    fechaPagado: this.fechaPagado,
-                    importePagado: this.importePagado
-                }
-                const subirFoto = this.fotoBlob ? () => subirFotoCaja(this.codigoCaja, this.fotoBlob) : null;
-                enviarSolicitud('PUT',parametros,this.urlModificar,'Producto actualizado',subirFoto)
-            }
+            const subirFoto = this.fotoBlob ? () => subirFotoCaja(this.id, this.fotoBlob) : null;
+            enviarSolicitud('PUT',parametros,this.urlModificar,'Producto actualizado',subirFoto)
         }
     }
 }

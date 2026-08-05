@@ -1,7 +1,7 @@
 import axios from 'axios';
 
-export async function crearInforme(codigosCajas) {
-    const respuesta = await axios.post(`${process.env.VUE_APP_API_URL}/informes`, { codigosCajas });
+export async function crearInforme(cajaIds) {
+    const respuesta = await axios.post(`${process.env.VUE_APP_API_URL}/informes`, { cajaIds });
     return respuesta.data;
 }
 

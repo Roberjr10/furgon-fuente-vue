@@ -37,16 +37,16 @@ export function comprimirImagen(archivo, maxDimension = 1280, calidad = 0.75) {
     });
 }
 
-export function subirFotoCaja(codigoCaja, blob) {
+export function subirFotoCaja(id, blob) {
     const formData = new FormData();
     formData.append('foto', blob, 'foto.jpg');
-    return axios.post(`${process.env.VUE_APP_API_URL}/cajas/${codigoCaja}/foto`, formData);
+    return axios.post(`${process.env.VUE_APP_API_URL}/cajas/${id}/foto`, formData);
 }
 
 // Devuelve una URL local (blob:) lista para usar en <img src>, o null si la caja no tiene foto.
-export async function obtenerUrlFotoCaja(codigoCaja) {
+export async function obtenerUrlFotoCaja(id) {
     try {
-        const respuesta = await axios.get(`${process.env.VUE_APP_API_URL}/cajas/${codigoCaja}/foto`, {
+        const respuesta = await axios.get(`${process.env.VUE_APP_API_URL}/cajas/${id}/foto`, {
             responseType: 'blob'
         });
         return URL.createObjectURL(respuesta.data);
@@ -58,6 +58,6 @@ export async function obtenerUrlFotoCaja(codigoCaja) {
     }
 }
 
-export function borrarFotoCaja(codigoCaja) {
-    return axios.delete(`${process.env.VUE_APP_API_URL}/cajas/${codigoCaja}/foto`);
+export function borrarFotoCaja(id) {
+    return axios.delete(`${process.env.VUE_APP_API_URL}/cajas/${id}/foto`);
 }

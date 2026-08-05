@@ -12,9 +12,12 @@
             type="checkbox"
             class="form-check-input seleccion-checkbox"
             :checked="seleccionada"
-            @click.stop="$emit('toggle-seleccion', caja.codigoCaja)"
+            @click.stop="$emit('toggle-seleccion', caja.id)"
           >
-          <h5 class="fw-bold text-primary mb-0">{{ caja.codigoCaja }}</h5>
+          <h5 class="fw-bold text-primary mb-0">
+            <template v-if="caja.codigoCaja">{{ caja.codigoCaja }}</template>
+            <span v-else class="fst-italic text-muted">Sin código</span>
+          </h5>
         </div>
         <span :class="['badge fs-6', caja.pagado ? 'bg-success' : 'bg-danger']">
           {{ caja.pagado ? 'Pagado' : 'Pendiente' }}
@@ -50,13 +53,13 @@
             <i class="fa-solid fa-image"></i> Ver foto
           </button>
           <router-link
-            :to="{ path: 'edit/' + caja.codigoCaja }"
+            :to="{ path: 'edit/' + caja.id }"
             class="btn btn-outline-warning"
             title="Editar"
           >
             <i class="fa-solid fa-pen"></i> Editar
           </router-link>
-          <button class="btn btn-outline-danger" title="Eliminar" @click="$emit('eliminar', caja.codigoCaja)">
+          <button class="btn btn-outline-danger" title="Eliminar" @click="$emit('eliminar', caja.id)">
             <i class="fa-solid fa-trash"></i> Eliminar
           </button>
         </div>
@@ -73,7 +76,7 @@
         <div class="modal-dialog modal-dialog-centered modal-lg">
           <div class="modal-content shadow-lg rounded-4">
             <div class="modal-header bg-primary text-white">
-              <h4 class="modal-title">Caja {{ caja.codigoCaja }}</h4>
+              <h4 class="modal-title">Caja {{ caja.codigoCaja || ('#' + caja.id) }}</h4>
               <button type="button" class="btn-close btn-close-white" @click="cerrarModal"></button>
             </div>
             <div class="modal-body fs-5">
@@ -118,7 +121,7 @@
 
             </div>
             <div class="modal-footer d-grid gap-2 d-sm-flex justify-content-sm-end">
-              <router-link :to="{ path: 'edit/' + caja.codigoCaja }" class="btn btn-warning btn-lg">
+              <router-link :to="{ path: 'edit/' + caja.id }" class="btn btn-warning btn-lg">
                 <i class="fa-solid fa-pen"></i> Editar
               </router-link>
               <button class="btn btn-secondary btn-lg" @click="cerrarModal">
@@ -140,7 +143,7 @@
         <div class="modal-dialog modal-dialog-centered">
           <div class="modal-content shadow-lg rounded-4">
             <div class="modal-header bg-primary text-white">
-              <h4 class="modal-title">Foto de la caja {{ caja.codigoCaja }}</h4>
+              <h4 class="modal-title">Foto de la caja {{ caja.codigoCaja || ('#' + caja.id) }}</h4>
               <button type="button" class="btn-close btn-close-white" @click="cerrarLightbox"></button>
             </div>
             <div class="modal-body text-center">
@@ -154,7 +157,7 @@
               <a
                 v-if="fotoUrl"
                 :href="fotoUrl"
-                :download="'caja-' + caja.codigoCaja + '.jpg'"
+                :download="'caja-' + (caja.codigoCaja || caja.id) + '.jpg'"
                 class="btn btn-success btn-lg"
               >
                 <i class="fa-solid fa-download"></i> Descargar
@@ -199,7 +202,7 @@ export default {
   methods: {
     alTocarCard() {
       if (this.modoSeleccion) {
-        this.$emit('toggle-seleccion', this.caja.codigoCaja);
+        this.$emit('toggle-seleccion', this.caja.id);
       } else {
         this.abrirModal();
       }
@@ -217,7 +220,7 @@ export default {
         try {
           // obtenerUrlFotoCaja ya distingue "no tiene foto" (404 -> null)
           // de un error real; aqui solo llega un error real (401, 500, etc).
-          this.fotoUrl = await obtenerUrlFotoCaja(this.caja.codigoCaja);
+          this.fotoUrl = await obtenerUrlFotoCaja(this.caja.id);
           this.fotoIntentada = true;
         } catch (error) {
           console.error('Error al cargar la foto:', error);

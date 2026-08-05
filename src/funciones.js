@@ -13,9 +13,9 @@ export function show_alerta(mensaje, icono, foco=''){
     });
 }
 
-export function confirmar(codigoCaja){
+export function confirmar(id, etiqueta){
 
-var url = `${process.env.VUE_APP_API_URL}/borrarCaja/${codigoCaja}`;
+var url = `${process.env.VUE_APP_API_URL}/borrarCaja/${id}`;
 
 
     const swalWithBootstrapButtons = Swal.mixin({
@@ -24,7 +24,7 @@ var url = `${process.env.VUE_APP_API_URL}/borrarCaja/${codigoCaja}`;
     })
 
     swalWithBootstrapButtons.fire({
-        title: 'Seguro que quieres eliminar la caja ' +codigoCaja,
+        title: 'Seguro que quieres eliminar la caja ' + (etiqueta || ''),
         text: 'Se perderá la información de la caja',
         icon: 'question' ,
         showCancelButton: true,
@@ -32,49 +32,36 @@ var url = `${process.env.VUE_APP_API_URL}/borrarCaja/${codigoCaja}`;
         cancelButtonText: '<i class="fa-solid fa-ban"></i> Cancelar'
     }).then((result)=> {
         if(result.isConfirmed){
-                enviarSolicitud('DELETE',{codigoCaja:codigoCaja},url,'Caja eliminada');
+                enviarSolicitud('DELETE',{},url,'Caja eliminada');
         }else{
             show_alerta('Operación cancelada','info');
         }
     })
 }
 
-export function enviarSolicitud(metodo,parametros,url,mensaje,alExito) {
-
-    axios({
-        method:metodo,
-        url:url,
-        data:parametros
-    }).then(async function(respuesta){
-        var status = respuesta.data;
-        if(status === 'success'){
-            if (alExito) {
-                try {
-                    await alExito();
-                } catch (error) {
-                    show_alerta('Se guardó, pero la foto no se pudo subir', 'warning');
-                    window.setTimeout(function(){
-                        window.location.href='/';
-                    }, 1500)
-                    return;
-                }
+// alExito (opcional): callback ejecutado tras una respuesta exitosa, antes del
+// mensaje/redirección. Recibe el cuerpo de la respuesta (p.ej. {id: ...} al crear).
+export async function enviarSolicitud(metodo,parametros,url,mensaje,alExito) {
+    try {
+        const respuesta = await axios({ method: metodo, url: url, data: parametros });
+        if (alExito) {
+            try {
+                await alExito(respuesta.data);
+            } catch (error) {
+                console.error(error);
+                show_alerta('Se guardó, pero la foto no se pudo subir', 'warning');
+                window.setTimeout(function(){
+                    window.location.href='/';
+                }, 1500)
+                return;
             }
-            show_alerta(mensaje,status);
-            window.setTimeout(function(){
-                window.location.href='/';
-            }, 1000)
-        }else {
-            var listado ='';
-            var errores = respuesta.data[1]['errors']
-            Object.keys(errores).forEach(
-                key => listado += errores[key][0] + '#####'
-            );
-
-            show_alerta(listado,'error');
-            console.log(listado)
         }
-    }).catch(function(error){
-        show_alerta('Error en la solicitud', 'error');
-    });
+        show_alerta(mensaje, 'success');
+        window.setTimeout(function(){
+            window.location.href='/';
+        }, 1000)
+    } catch (error) {
+        const mensajeError = (error.response && error.response.data && error.response.data.error) || 'Error en la solicitud';
+        show_alerta(mensajeError, 'error');
+    }
 }
-

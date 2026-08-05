@@ -1,124 +1,106 @@
 <template>
   <div
-    class="card mb-3 mt-3 shadow-sm border-2 rounded-3 mobile-card"
-    :class="{'mobile-card-alt': index % 2 !== 0}" 
+    class="card mb-3 mt-3 shadow-sm rounded-3 caja-card border-start border-4"
+    :class="caja.pagado ? 'border-success' : 'border-danger'"
+    @click="abrirModal"
   >
     <div class="card-body">
-      <h6 class="fw-bold text-primary mb-2">{{ caja.codigoCaja }}</h6>
-      <p class="mb-1"><strong>Remitente:</strong> {{ caja.remitente }}</p>
-      <p class="mb-1"><strong>Destinatario:</strong> {{ caja.destinatario }}</p>
-      <p class="mb-2">
-        <strong>Pagado:</strong>
-        <span :class="['badge', caja.pagado ? 'bg-success' : 'bg-danger']">
-          {{ caja.pagado ? 'Sí' : 'No' }}
+      <div class="d-flex justify-content-between align-items-start mb-2">
+        <h5 class="fw-bold text-primary mb-0">{{ caja.codigoCaja }}</h5>
+        <span :class="['badge fs-6', caja.pagado ? 'bg-success' : 'bg-danger']">
+          {{ caja.pagado ? 'Pagado' : 'Pendiente' }}
         </span>
+      </div>
+
+      <p class="mb-2 fs-6">
+        <i class="fa-solid fa-user text-muted me-1"></i>{{ caja.remitente }}
+        <i class="fa-solid fa-arrow-right-long text-muted mx-1"></i>
+        <i class="fa-solid fa-user text-muted me-1"></i>{{ caja.destinatario }}
       </p>
 
-      <!-- Botones adaptables -->
-      <div class="d-flex flex-column flex-sm-row">
-        <button class="btn btn-outline-primary btn-sm flex-fill mb-2 mb-sm-0 me-sm-1" @click="abrirModal">
-          <i class="fa-solid fa-eye"></i> Ver
-        </button>
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <span class="fw-bold fs-4">{{ formatoImporte(caja.importe) }}</span>
+        <span class="text-muted">{{ formatoFecha(caja.fecha) }}</span>
+      </div>
+
+      <p class="text-primary text-end mb-0 small">
+        Toca la caja para ver todos los datos <i class="fa-solid fa-chevron-right"></i>
+      </p>
+
+      <!-- Acciones: no deben abrir el modal de ver -->
+      <div class="d-grid gap-2 d-sm-flex justify-content-sm-end mt-3" @click.stop>
         <router-link
           :to="{ path: 'edit/' + caja.codigoCaja }"
-          class="btn btn-outline-warning btn-sm flex-fill mb-2 mb-sm-0 me-sm-1"
+          class="btn btn-outline-warning"
+          title="Editar"
         >
           <i class="fa-solid fa-pen"></i> Editar
         </router-link>
-        <button class="btn btn-outline-danger btn-sm flex-fill" @click="$emit('eliminar', caja.codigoCaja)">
+        <button class="btn btn-outline-danger" title="Eliminar" @click="$emit('eliminar', caja.codigoCaja)">
           <i class="fa-solid fa-trash"></i> Eliminar
         </button>
       </div>
 
-      <!-- Modal responsive -->
+      <!-- Modal de detalle -->
       <div
         v-if="mostrarModal"
         class="modal fade show d-block"
         tabindex="-1"
-        style="background-color: rgba(0,0,0,0.5);  padding: 35px;"
+        style="background-color: rgba(0,0,0,0.5); padding: 35px;"
+        @click.stop
       >
         <div class="modal-dialog modal-dialog-centered modal-lg">
           <div class="modal-content shadow-lg rounded-4">
             <div class="modal-header bg-primary text-white">
-              <h4 class="modal-title">DETALLES DEL PRODUCTO</h4>
+              <h4 class="modal-title">Caja {{ caja.codigoCaja }}</h4>
               <button type="button" class="btn-close btn-close-white" @click="cerrarModal"></button>
             </div>
-            <div class="modal-body">
-              <div class="row g-3">
-                <!-- Datos remitente -->
-                <div class="col-12">
-                  <h5 class="section-title">Datos del Remitente</h5>
-                </div>
-                <div class="col-12 col-sm-6">
-                  <label class="form-label">Remitente</label>
-                  <input type="text" class="form-control" :value="caja.remitente" readonly>
-                </div>
-                <div class="col-12 col-sm-6">
-                  <label class="form-label">Fecha</label>
-                  <input type="date" class="form-control" :value=" new Date(caja.fecha).toISOString().split('T')[0]" readonly>
-                </div>
-                <div class="col-12 col-sm-6">
-                  <label class="form-label">Teléfono remitente</label>
-                  <input type="tel" class="form-control" :value="caja.telefonoRemitente" readonly>
-                </div>
+            <div class="modal-body fs-5">
 
-                <!-- Datos destinatario -->
-                <div class="col-12 mt-4">
-                  <h5 class="section-title">Datos del Destinatario</h5>
-                </div>
-                <div class="col-12 col-sm-6">
-                  <label class="form-label">Destinatario</label>
-                  <input type="text" class="form-control" :value="caja.destinatario" readonly>
-                </div>
-                <div class="col-12">
-                  <label class="form-label">Dirección</label>
-                  <textarea type="text" class="form-control" :value="caja.direccion" readonly></textarea>
-                </div>
-                <div class="col-12 col-sm-6">
-                  <label class="form-label">Teléfono destinatario</label>
-                  <input type="tel" class="form-control" :value="caja.telefonoDestinatario" readonly>
-                </div>
+              <div class="d-flex justify-content-between align-items-center mb-3">
+                <h2 class="mb-0">{{ formatoImporte(caja.importe) }}</h2>
+                <span :class="['badge fs-6', caja.pagado ? 'bg-success' : 'bg-danger']">
+                  {{ caja.pagado ? 'Pagado' : 'Pendiente de pago' }}
+                </span>
+              </div>
 
-                <!-- Detalles paquete -->
-                <div class="col-12 mt-4">
-                  <h5 class="section-title">Detalles del Paquete</h5>
+              <div class="row g-2 text-center mb-4">
+                <div class="col-6">
+                  <div class="stat-box">
+                    <div class="text-muted small">Pagar furgón</div>
+                    <div class="fw-bold fs-5">{{ formatoImporte(caja.importeCrini) }}</div>
+                  </div>
                 </div>
-                <div class="col-12 col-sm-6">
-                  <label class="form-label">Código de la caja</label>
-                  <input type="text" class="form-control" :value="caja.codigoCaja" readonly>
-                </div>
-                <div class="col-12 col-sm-6">
-                  <label class="form-label">Fecha de Pago</label>
-                  <input type="date" class="form-control" :value="caja.fechaPagado ? new Date(caja.fechaPagado).toISOString().split('T')[0] : ''" readonly>
-                </div>
-                <div class="col-12">
-                  <label class="form-label">Descripción</label>
-                  <textarea type="text" class="form-control" :value="caja.descripcion" readonly></textarea>
-                </div>
-                <div class="col-12 col-sm-6">
-                  <label class="form-label">Pagado</label>
-                  <input type="text" class="form-control" :value="caja.pagado ? 'Sí' : 'No'" readonly>
-                </div>
-                <div class="col-12 col-sm-6">
-                  <label class="form-label">Importe total</label>
-                  <input type="text" class="form-control" :value="caja.importe" readonly>
-                </div>
-                   <div class="col-12 col-sm-6">
-                  <label class="form-label">Importe pagado</label>
-                  <input type="text" class="form-control" :value="caja.importePagado" readonly>
-                </div>
-                <div class="col-12 col-sm-6">
-                  <label class="form-label">Importe pagar furgón</label>
-                  <input type="text" class="form-control" :value="caja.importeCrini" readonly>
-                </div>
-                <div class="col-12 col-sm-6">
-                  <label class="form-label">Código comprobante</label>
-                  <input type="text" class="form-control" :value="caja.codigoComprobante" readonly>
+                <div class="col-6">
+                  <div class="stat-box">
+                    <div class="text-muted small">Importe pagado</div>
+                    <div class="fw-bold fs-5">{{ formatoImporte(caja.importePagado) }}</div>
+                  </div>
                 </div>
               </div>
+
+              <h6 class="section-title">Remitente</h6>
+              <p class="mb-1">{{ caja.remitente }}</p>
+              <p class="text-muted mb-3"><i class="fa-solid fa-phone me-1"></i>{{ caja.telefonoRemitente }}</p>
+
+              <h6 class="section-title">Destinatario</h6>
+              <p class="mb-1">{{ caja.destinatario }}</p>
+              <p class="text-muted mb-1"><i class="fa-solid fa-phone me-1"></i>{{ caja.telefonoDestinatario }}</p>
+              <p class="text-muted mb-3"><i class="fa-solid fa-location-dot me-1"></i>{{ caja.direccion }}</p>
+
+              <h6 class="section-title">Paquete</h6>
+              <p class="mb-1">{{ caja.descripcion }}</p>
+              <p class="text-muted mb-0">
+                <i class="fa-solid fa-calendar-day me-1"></i>{{ formatoFecha(caja.fecha) }}
+                <span v-if="caja.pagado"> · Pagado el {{ formatoFecha(caja.fechaPagado) }}</span>
+              </p>
+
             </div>
-            <div class="modal-footer">
-              <button class="btn btn-secondary" @click="cerrarModal">
+            <div class="modal-footer d-grid gap-2 d-sm-flex justify-content-sm-end">
+              <router-link :to="{ path: 'edit/' + caja.codigoCaja }" class="btn btn-warning btn-lg">
+                <i class="fa-solid fa-pen"></i> Editar
+              </router-link>
+              <button class="btn btn-secondary btn-lg" @click="cerrarModal">
                 <i class="fa-solid fa-xmark"></i> Cerrar
               </button>
             </div>
@@ -147,12 +129,46 @@ export default {
     },
     cerrarModal() {
       this.mostrarModal = false;
+    },
+    formatoImporte(valor) {
+      const n = Number(valor);
+      if (Number.isNaN(n)) return valor;
+      return n.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' });
+    },
+    formatoFecha(valor) {
+      if (!valor) return '';
+      const d = new Date(valor);
+      if (Number.isNaN(d.getTime())) return valor;
+      return d.toLocaleDateString('es-ES');
     }
   }
 };
 </script>
 
 <style scoped>
+.caja-card {
+  cursor: pointer;
+  transition: box-shadow 0.15s;
+}
+.caja-card:hover {
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15) !important;
+}
+
+.stat-box {
+  background: #f5f7fa;
+  border-radius: 8px;
+  padding: 10px;
+}
+
+.section-title {
+  color: #fdfdfd;
+  background-color: #0e0586;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-weight: bold;
+  font-size: 0.9rem;
+}
+
 @media (max-width: 576px) {
   .card-body {
     padding: 0.8rem;

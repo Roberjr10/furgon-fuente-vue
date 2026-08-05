@@ -186,13 +186,22 @@ export default {
       if (!this.fotoIntentada) {
         this.cargandoFotoLightbox = true;
         try {
+          // obtenerUrlFotoCaja ya distingue "no tiene foto" (404 -> null)
+          // de un error real; aqui solo llega un error real (401, 500, etc).
           this.fotoUrl = await obtenerUrlFotoCaja(this.caja.codigoCaja);
+          this.fotoIntentada = true;
         } catch (error) {
           console.error('Error al cargar la foto:', error);
-        } finally {
-          this.fotoIntentada = true;
+          this.mostrarLightbox = false;
           this.cargandoFotoLightbox = false;
+          if (!error.response || error.response.status !== 401) {
+            show_alerta('No se pudo cargar la foto', 'error');
+          }
+          // si es 401 (sesion expirada), el interceptor global de axios
+          // ya cierra sesion y redirige al login
+          return;
         }
+        this.cargandoFotoLightbox = false;
       }
 
       if (!this.fotoUrl) {

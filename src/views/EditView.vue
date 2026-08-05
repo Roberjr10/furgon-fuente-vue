@@ -95,6 +95,21 @@
             </div>
         </div>
 
+        <div class="col-12">
+            <label class="form-label">Foto del paquete</label>
+            <div v-if="cargandoFoto" class="text-center my-2">
+                <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+                <span class="text-muted ms-2">Cargando foto...</span>
+            </div>
+            <div v-if="fotoPreviewUrl" class="mb-2 text-center">
+                <img :src="fotoPreviewUrl" alt="Foto del paquete" class="foto-preview img-thumbnail">
+            </div>
+            <button type="button" class="btn btn-outline-primary w-100" @click="$refs.inputFoto.click()">
+                <i class="fa-solid fa-camera"></i> {{ fotoPreviewUrl ? 'Cambiar foto' : 'Añadir foto' }}
+            </button>
+            <input ref="inputFoto" type="file" accept="image/*" capture="environment" class="d-none" @change="onFotoSeleccionada">
+        </div>
+
         <div class="col-12 col-md-6">
             <label for="pagado" class="form-label">Pagado</label>
             <div class="input-group">
@@ -155,6 +170,11 @@
  
 </template>
  <style>
+    .foto-preview {
+        max-width: 100%;
+        max-height: 260px;
+        object-fit: contain;
+    }
     /* Estilo unificado para todos los títulos de sección */
     .section-title {
         color: #fdfdfd; /* Verde Bootstrap */
@@ -167,6 +187,7 @@
 </style>
 <script>
 import { show_alerta, enviarSolicitud } from '../funciones';
+import { comprimirImagen, subirFotoCaja, obtenerUrlFotoCaja } from '../utilFoto';
 import { useRoute } from 'vue-router';
 import axios from 'axios';
 
@@ -188,6 +209,9 @@ export default{
             codigoComprobante: '',
             fechaPagado: '',
             importePagado: '',
+            fotoBlob: null,
+            fotoPreviewUrl: null,
+            cargandoFoto: false,
             url:  `${process.env.VUE_APP_API_URL}`
 
         }
@@ -197,9 +221,33 @@ export default{
         this.codigoCaja = route.params.codigoCaja;
         this.urlModificar = this.url+'/modificarCaja/'+this.codigoCaja
         this.getCaja(this.codigoCaja);
-        
+        this.cargarFotoExistente(this.codigoCaja);
+    },
+    beforeUnmount(){
+        if (this.fotoPreviewUrl) URL.revokeObjectURL(this.fotoPreviewUrl);
     },
     methods: {
+        async cargarFotoExistente(codigoCaja){
+            this.cargandoFoto = true;
+            try{
+                this.fotoPreviewUrl = await obtenerUrlFotoCaja(codigoCaja);
+            }catch(error){
+                console.error('Error al cargar la foto:', error);
+            }finally{
+                this.cargandoFoto = false;
+            }
+        },
+        async onFotoSeleccionada(event){
+            const archivo = event.target.files[0];
+            if(!archivo) return;
+            try{
+                this.fotoBlob = await comprimirImagen(archivo);
+                if (this.fotoPreviewUrl) URL.revokeObjectURL(this.fotoPreviewUrl);
+                this.fotoPreviewUrl = URL.createObjectURL(this.fotoBlob);
+            }catch(error){
+                show_alerta('No se pudo procesar la foto', 'error');
+            }
+        },
         getCaja(codigoCaja){
            
             axios.get(this.url+'/consultarCaja/'+ codigoCaja).then(
@@ -281,7 +329,8 @@ export default{
                     fechaPagado: this.fechaPagado,
                     importePagado: this.importePagado
                 }
-                enviarSolicitud('PUT',parametros,this.urlModificar,'Producto actualizado')
+                const subirFoto = this.fotoBlob ? () => subirFotoCaja(this.codigoCaja, this.fotoBlob) : null;
+                enviarSolicitud('PUT',parametros,this.urlModificar,'Producto actualizado',subirFoto)
             }
         }
     }

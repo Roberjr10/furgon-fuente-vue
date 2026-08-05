@@ -73,6 +73,20 @@
         </div>
 
         <div class="col-12">
+            <label class="form-label">Foto del paquete (opcional)</label>
+            <div v-if="fotoPreviewUrl" class="mb-2 text-center">
+                <img :src="fotoPreviewUrl" alt="Foto del paquete" class="foto-preview img-thumbnail">
+                <button type="button" class="btn btn-outline-danger btn-lg d-block w-100 mt-2" @click="quitarFoto">
+                    <i class="fa-solid fa-trash"></i> Quitar foto
+                </button>
+            </div>
+            <button v-else type="button" class="btn btn-outline-primary btn-lg w-100" @click="$refs.inputFoto.click()">
+                <i class="fa-solid fa-camera"></i> Hacer foto
+            </button>
+            <input ref="inputFoto" type="file" accept="image/*" capture="environment" class="d-none" @change="onFotoSeleccionada">
+        </div>
+
+        <div class="col-12">
             <label for="descripcion" class="form-label">Descripción</label>
             <div class="input-group input-group-lg">
                 <span class="input-group-text"><i class="fa-solid fa-box"></i></span>
@@ -149,7 +163,8 @@
 </template>
 
 <script>
-import { enviarSolicitud } from '../funciones';
+import { show_alerta, enviarSolicitud } from '../funciones';
+import { comprimirImagen, subirFotoCaja } from '../utilFoto';
 
 export default{
     data(){
@@ -167,8 +182,13 @@ export default{
             yaPagado: false,
             fechaPagado: '',
             importePagado: '',
+            fotoBlob: null,
+            fotoPreviewUrl: null,
             url: `${process.env.VUE_APP_API_URL}/crearCaja/`
         }
+    },
+    beforeUnmount(){
+        if (this.fotoPreviewUrl) URL.revokeObjectURL(this.fotoPreviewUrl);
     },
     methods: {
         onCambioPagado(){
@@ -176,6 +196,23 @@ export default{
                 this.fechaPagado = this.fechaPagado || new Date().toISOString().split('T')[0];
                 this.importePagado = this.importePagado || this.importe;
             }
+        },
+        async onFotoSeleccionada(event){
+            const archivo = event.target.files[0];
+            if(!archivo) return;
+            try{
+                this.fotoBlob = await comprimirImagen(archivo);
+                if (this.fotoPreviewUrl) URL.revokeObjectURL(this.fotoPreviewUrl);
+                this.fotoPreviewUrl = URL.createObjectURL(this.fotoBlob);
+            }catch(error){
+                show_alerta('No se pudo procesar la foto', 'error');
+            }
+        },
+        quitarFoto(){
+            if (this.fotoPreviewUrl) URL.revokeObjectURL(this.fotoPreviewUrl);
+            this.fotoBlob = null;
+            this.fotoPreviewUrl = null;
+            this.$refs.inputFoto.value = '';
         },
         guardar(event){
             event.preventDefault();
@@ -200,7 +237,8 @@ export default{
                 fechaPagado: this.yaPagado ? this.fechaPagado : '',
                 importePagado: this.yaPagado ? this.importePagado : 0
             }
-            enviarSolicitud('POST',parametros,this.url,'Caja guardada')
+            const subirFoto = this.fotoBlob ? () => subirFotoCaja(this.codigoCaja, this.fotoBlob) : null;
+            enviarSolicitud('POST',parametros,this.url,'Caja guardada',subirFoto)
         }
     }
 }
@@ -215,6 +253,12 @@ export default{
     padding: 8px 12px;
     border-radius: 6px;
     font-weight: bold;
+}
+
+.foto-preview {
+    max-width: 100%;
+    max-height: 260px;
+    object-fit: contain;
 }
 
 .submit-bar {

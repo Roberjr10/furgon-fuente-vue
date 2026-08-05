@@ -57,6 +57,14 @@
             </div>
             <div class="modal-body fs-5">
 
+              <div v-if="cargandoFoto" class="text-center mb-3">
+                <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+                <span class="text-muted ms-2">Cargando foto...</span>
+              </div>
+              <div v-else-if="fotoUrl" class="text-center mb-3">
+                <img :src="fotoUrl" alt="Foto del paquete" class="foto-detalle img-thumbnail">
+              </div>
+
               <div class="d-flex justify-content-between align-items-center mb-3">
                 <h2 class="mb-0">{{ formatoImporte(caja.importe) }}</h2>
                 <span :class="['badge fs-6', caja.pagado ? 'bg-success' : 'bg-danger']">
@@ -113,6 +121,8 @@
 </template>
 
 <script>
+import { obtenerUrlFotoCaja } from '../utilFoto';
+
 export default {
   props: {
     caja: Object,
@@ -120,12 +130,27 @@ export default {
   },
   data() {
     return {
-      mostrarModal: false
+      mostrarModal: false,
+      fotoUrl: null,
+      cargandoFoto: false
     };
   },
+  beforeUnmount() {
+    if (this.fotoUrl) URL.revokeObjectURL(this.fotoUrl);
+  },
   methods: {
-    abrirModal() {
+    async abrirModal() {
       this.mostrarModal = true;
+      if (this.fotoUrl === null && !this.cargandoFoto) {
+        this.cargandoFoto = true;
+        try {
+          this.fotoUrl = await obtenerUrlFotoCaja(this.caja.codigoCaja);
+        } catch (error) {
+          console.error('Error al cargar la foto:', error);
+        } finally {
+          this.cargandoFoto = false;
+        }
+      }
     },
     cerrarModal() {
       this.mostrarModal = false;
@@ -152,6 +177,12 @@ export default {
 }
 .caja-card:hover {
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15) !important;
+}
+
+.foto-detalle {
+  max-width: 100%;
+  max-height: 280px;
+  object-fit: contain;
 }
 
 .stat-box {

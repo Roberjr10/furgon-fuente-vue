@@ -39,15 +39,26 @@ var url = `${process.env.VUE_APP_API_URL}/borrarCaja/${codigoCaja}`;
     })
 }
 
-export function enviarSolicitud(metodo,parametros,url,mensaje) {
+export function enviarSolicitud(metodo,parametros,url,mensaje,alExito) {
 
     axios({
         method:metodo,
         url:url,
         data:parametros
-    }).then(function(respuesta){
+    }).then(async function(respuesta){
         var status = respuesta.data;
         if(status === 'success'){
+            if (alExito) {
+                try {
+                    await alExito();
+                } catch (error) {
+                    show_alerta('Se guardó, pero la foto no se pudo subir', 'warning');
+                    window.setTimeout(function(){
+                        window.location.href='/';
+                    }, 1500)
+                    return;
+                }
+            }
             show_alerta(mensaje,status);
             window.setTimeout(function(){
                 window.location.href='/';

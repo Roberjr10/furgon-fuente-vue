@@ -3,6 +3,7 @@ import HomeView from '../views/HomeView.vue';
 import CreateView from '../views/CreateView.vue';
 import EditView from '../views/EditView.vue';
 import SearchView from '../views/SearchView.vue';
+import InformesView from '../views/InformesView.vue';
 import LoginView from '../views/LoginView.vue';
 
 const routes = [
@@ -40,6 +41,12 @@ const routes = [
     path: '/search',
     name: 'search',
     component: SearchView,
+    meta: { requiereAuth: true } // 🔒 protegida
+  },
+  {
+    path: '/informes',
+    name: 'informes',
+    component: InformesView,
     meta: { requiereAuth: true } // 🔒 protegida
   }
 ];

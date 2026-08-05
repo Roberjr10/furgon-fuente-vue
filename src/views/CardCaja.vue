@@ -1,12 +1,21 @@
 <template>
   <div
     class="card mb-3 mt-3 shadow-sm rounded-3 caja-card border-start border-4"
-    :class="caja.pagado ? 'border-success' : 'border-danger'"
-    @click="abrirModal"
+    :class="[caja.pagado ? 'border-success' : 'border-danger', { 'caja-seleccionada': modoSeleccion && seleccionada }]"
+    @click="alTocarCard"
   >
     <div class="card-body">
       <div class="d-flex justify-content-between align-items-start mb-2">
-        <h5 class="fw-bold text-primary mb-0">{{ caja.codigoCaja }}</h5>
+        <div class="d-flex align-items-center gap-2">
+          <input
+            v-if="modoSeleccion"
+            type="checkbox"
+            class="form-check-input seleccion-checkbox"
+            :checked="seleccionada"
+            @click.stop="$emit('toggle-seleccion', caja.codigoCaja)"
+          >
+          <h5 class="fw-bold text-primary mb-0">{{ caja.codigoCaja }}</h5>
+        </div>
         <span :class="['badge fs-6', caja.pagado ? 'bg-success' : 'bg-danger']">
           {{ caja.pagado ? 'Pagado' : 'Pendiente' }}
         </span>
@@ -23,26 +32,35 @@
         <span class="text-muted">{{ formatoFecha(caja.fecha) }}</span>
       </div>
 
-      <p class="text-primary text-end mb-0 small">
-        Toca la caja para ver todos los datos <i class="fa-solid fa-chevron-right"></i>
-      </p>
+      <template v-if="modoSeleccion">
+        <p v-if="informePrevio" class="text-warning-emphasis bg-warning-subtle rounded p-2 mb-0 small">
+          <i class="fa-solid fa-triangle-exclamation"></i>
+          Ya estaba en el informe #{{ informePrevio.informe_id }} del {{ formatoFecha(informePrevio.fecha_generado) }}
+        </p>
+      </template>
 
-      <!-- Acciones: no deben abrir el modal de ver -->
-      <div class="d-grid gap-2 d-sm-flex justify-content-sm-end mt-3" @click.stop>
-        <button class="btn btn-outline-info" title="Ver foto" @click="verFoto">
-          <i class="fa-solid fa-image"></i> Ver foto
-        </button>
-        <router-link
-          :to="{ path: 'edit/' + caja.codigoCaja }"
-          class="btn btn-outline-warning"
-          title="Editar"
-        >
-          <i class="fa-solid fa-pen"></i> Editar
-        </router-link>
-        <button class="btn btn-outline-danger" title="Eliminar" @click="$emit('eliminar', caja.codigoCaja)">
-          <i class="fa-solid fa-trash"></i> Eliminar
-        </button>
-      </div>
+      <template v-else>
+        <p class="text-primary text-end mb-0 small">
+          Toca la caja para ver todos los datos <i class="fa-solid fa-chevron-right"></i>
+        </p>
+
+        <!-- Acciones: no deben abrir el modal de ver -->
+        <div class="d-grid gap-2 d-sm-flex justify-content-sm-end mt-3" @click.stop>
+          <button class="btn btn-outline-info" title="Ver foto" @click="verFoto">
+            <i class="fa-solid fa-image"></i> Ver foto
+          </button>
+          <router-link
+            :to="{ path: 'edit/' + caja.codigoCaja }"
+            class="btn btn-outline-warning"
+            title="Editar"
+          >
+            <i class="fa-solid fa-pen"></i> Editar
+          </router-link>
+          <button class="btn btn-outline-danger" title="Eliminar" @click="$emit('eliminar', caja.codigoCaja)">
+            <i class="fa-solid fa-trash"></i> Eliminar
+          </button>
+        </div>
+      </template>
 
       <!-- Modal de detalle -->
       <div
@@ -160,8 +178,12 @@ import { show_alerta } from '../funciones';
 export default {
   props: {
     caja: Object,
-    index: Number
+    index: Number,
+    modoSeleccion: { type: Boolean, default: false },
+    seleccionada: { type: Boolean, default: false },
+    informePrevio: { type: Object, default: null }
   },
+  emits: ['eliminar', 'toggle-seleccion'],
   data() {
     return {
       mostrarModal: false,
@@ -175,6 +197,13 @@ export default {
     if (this.fotoUrl) URL.revokeObjectURL(this.fotoUrl);
   },
   methods: {
+    alTocarCard() {
+      if (this.modoSeleccion) {
+        this.$emit('toggle-seleccion', this.caja.codigoCaja);
+      } else {
+        this.abrirModal();
+      }
+    },
     abrirModal() {
       this.mostrarModal = true;
     },
@@ -234,6 +263,17 @@ export default {
 }
 .caja-card:hover {
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15) !important;
+}
+
+.caja-seleccionada {
+  background-color: #eaf2ff;
+  box-shadow: 0 0 0 3px #0d6efd !important;
+}
+
+.seleccion-checkbox {
+  width: 1.6em;
+  height: 1.6em;
+  cursor: pointer;
 }
 
 .foto-lightbox {

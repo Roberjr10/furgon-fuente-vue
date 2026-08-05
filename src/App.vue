@@ -67,6 +67,16 @@
               </router-link>
             </li>
             <li class="nav-item">
+              <router-link
+                to="/informes"
+                class="nav-link"
+                active-class="active"
+                @click="closeCollapse"
+              >
+                Informes
+              </router-link>
+            </li>
+            <li class="nav-item">
               <a href="#" class="nav-link" @click="logout">Salir</a>
             </li>
           </template>

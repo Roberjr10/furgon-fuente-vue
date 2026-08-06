@@ -5,6 +5,7 @@ import EditView from '../views/EditView.vue';
 import SearchView from '../views/SearchView.vue';
 import InformesView from '../views/InformesView.vue';
 import LoginView from '../views/LoginView.vue';
+import CargaRapidaView from '../views/CargaRapidaView.vue';
 
 const routes = [
   {
@@ -47,6 +48,12 @@ const routes = [
     path: '/informes',
     name: 'informes',
     component: InformesView,
+    meta: { requiereAuth: true } // 🔒 protegida
+  },
+  {
+    path: '/carga-rapida',
+    name: 'carga-rapida',
+    component: CargaRapidaView,
     meta: { requiereAuth: true } // 🔒 protegida
   }
 ];

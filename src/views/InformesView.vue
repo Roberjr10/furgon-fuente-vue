@@ -23,7 +23,7 @@
           <div>
             <div class="d-flex align-items-center gap-2 mb-1">
               <h5 class="mb-0">Informe #{{ informe.id }}</h5>
-              <span :class="['badge', informe.tipo === 'con_codigo' ? 'bg-success' : 'bg-primary']">
+              <span :class="['badge', informe.tipo === 'con_codigo' ? 'bg-terracotta' : 'bg-primary']">
                 {{ informe.tipo === 'con_codigo' ? 'Con código' : 'Completo' }}
               </span>
             </div>
@@ -31,7 +31,7 @@
             <p class="mb-0"><i class="fa-solid fa-box"></i> {{ informe.total_cajas }} caja(s)</p>
           </div>
           <button
-            class="btn btn-success btn-lg"
+            class="btn btn-primary btn-lg"
             :disabled="descargando === informe.id"
             @click="descargar(informe)"
           >

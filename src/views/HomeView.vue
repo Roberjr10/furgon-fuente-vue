@@ -44,7 +44,7 @@
   <div v-else-if="cajas.length === 0" class="text-center my-5 px-3">
     <i class="fa-solid fa-box-open fa-3x text-muted mb-3"></i>
     <p class="text-muted fs-4">Todavía no hay ninguna caja registrada.</p>
-    <router-link to="/create" class="btn btn-primary btn-lg mt-2">
+    <router-link to="/create" class="btn btn-terracotta btn-lg mt-2">
       <i class="fa-solid fa-plus"></i> Crear la primera caja
     </router-link>
   </div>
@@ -71,7 +71,7 @@
   <router-link
     v-if="!cargando && !modoSeleccion"
     to="/create"
-    class="btn btn-primary btn-lg rounded-circle boton-flotante shadow"
+    class="btn btn-lg rounded-circle boton-flotante shadow"
     title="Crear caja"
   >
     <i class="fa-solid fa-plus"></i>
@@ -86,7 +86,7 @@
         <i v-else class="fa-solid fa-file-lines"></i>
         Informe completo
       </button>
-      <button class="btn btn-success btn-lg flex-fill" :disabled="creandoInforme" @click="crearInformeSeleccion('con_codigo')">
+      <button class="btn btn-terracotta btn-lg flex-fill" :disabled="creandoInforme" @click="crearInformeSeleccion('con_codigo')">
         <span v-if="creandoInforme === 'con_codigo'" class="spinner-border spinner-border-sm me-1"></span>
         <i v-else class="fa-solid fa-file-pdf"></i>
         Informe con código
@@ -211,6 +211,9 @@ export default {
   align-items: center;
   justify-content: center;
   z-index: 20;
+  background-color: var(--furgon-terracotta);
+  border-color: var(--furgon-terracotta);
+  color: #fff;
 }
 
 .barra-informe {
@@ -223,6 +226,6 @@ export default {
   display: flex;
   flex-direction: column;
   z-index: 20;
-  border-top: 3px solid #0d6efd;
+  border-top: 3px solid var(--furgon-teal);
 }
 </style>

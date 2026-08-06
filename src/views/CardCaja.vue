@@ -1,7 +1,7 @@
 <template>
   <div
     class="card mb-3 mt-3 shadow-sm rounded-3 caja-card border-start border-4"
-    :class="[caja.pagado ? 'border-success' : 'border-danger', { 'caja-seleccionada': modoSeleccion && seleccionada }]"
+    :class="[caja.pagado ? 'border-pagado' : 'border-pendiente', { 'caja-seleccionada': modoSeleccion && seleccionada }]"
     @click="alTocarCard"
   >
     <div class="card-body">
@@ -19,9 +19,21 @@
             <span v-else class="fst-italic text-muted">Sin código</span>
           </h5>
         </div>
-        <span :class="['badge fs-6', caja.pagado ? 'bg-success' : 'bg-danger']">
-          {{ caja.pagado ? 'Pagado' : 'Pendiente' }}
-        </span>
+        <div class="d-flex align-items-center gap-2">
+          <button
+            v-if="!modoSeleccion"
+            type="button"
+            class="photo-btn"
+            title="Ver foto"
+            aria-label="Ver foto"
+            @click.stop="verFoto"
+          >
+            <i class="fa-solid fa-camera"></i>
+          </button>
+          <span :class="['badge fs-6', caja.pagado ? 'badge-pagado' : 'badge-pendiente']">
+            {{ caja.pagado ? 'Pagado' : 'Pendiente' }}
+          </span>
+        </div>
       </div>
 
       <p class="mb-2 fs-6">
@@ -49,9 +61,6 @@
 
         <!-- Acciones: no deben abrir el modal de ver -->
         <div class="d-grid gap-2 d-sm-flex justify-content-sm-end mt-3" @click.stop>
-          <button class="btn btn-outline-info" title="Ver foto" @click="verFoto">
-            <i class="fa-solid fa-image"></i> Ver foto
-          </button>
           <router-link
             :to="{ path: 'edit/' + caja.id }"
             class="btn btn-outline-warning"
@@ -83,7 +92,7 @@
 
               <div class="d-flex justify-content-between align-items-center mb-3">
                 <h2 class="mb-0">{{ formatoImporte(caja.importe) }}</h2>
-                <span :class="['badge fs-6', caja.pagado ? 'bg-success' : 'bg-danger']">
+                <span :class="['badge fs-6', caja.pagado ? 'badge-pagado' : 'badge-pendiente']">
                   {{ caja.pagado ? 'Pagado' : 'Pendiente de pago' }}
                 </span>
               </div>
@@ -158,7 +167,7 @@
                 v-if="fotoUrl"
                 :href="fotoUrl"
                 :download="'caja-' + (caja.codigoCaja || caja.id) + '.jpg'"
-                class="btn btn-success btn-lg"
+                class="btn btn-primary btn-lg"
               >
                 <i class="fa-solid fa-download"></i> Descargar
               </a>
@@ -269,14 +278,27 @@ export default {
 }
 
 .caja-seleccionada {
-  background-color: #eaf2ff;
-  box-shadow: 0 0 0 3px #0d6efd !important;
+  background-color: #eaf3f0;
+  box-shadow: 0 0 0 3px var(--furgon-teal) !important;
 }
 
 .seleccion-checkbox {
   width: 1.6em;
   height: 1.6em;
   cursor: pointer;
+}
+
+.photo-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: none;
+  background: #eaf3f0;
+  color: var(--furgon-teal);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 }
 
 .foto-lightbox {
@@ -293,7 +315,8 @@ export default {
 
 .section-title {
   color: #fdfdfd;
-  background-color: #0e0586;
+  background-color: var(--furgon-teal);
+  border-bottom: 3px solid var(--furgon-terracotta);
   padding: 6px 10px;
   border-radius: 6px;
   font-weight: bold;

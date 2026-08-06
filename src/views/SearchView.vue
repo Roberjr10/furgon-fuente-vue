@@ -1,9 +1,9 @@
 <template>
-  <div class="row mt-3"  style="padding: 15px;">
+  <div class="row mt-3" style="padding: 15px;">
     <div class="col-md-6 offset-md-3">
       <div class="card">
-        <div class="card-header bg-primary text-white text-center">
-          <h4>BUSCAR CAJA</h4>
+        <div class="card-header bg-primary bg-opacity-50 text-white text-center">
+          <h4>Buscar Caja</h4>
         </div>
         <div class="card-body">
 
@@ -11,9 +11,9 @@
             <div class="row g-3">
 
               <!-- Campo de selección -->
-              <div class="col-12 col-md-6">
+              <div class="col-12">
                 <label for="campo" class="form-label">Buscar por</label>
-                <div class="input-group">
+                <div class="input-group input-group-lg">
                   <span class="input-group-text">
                     <i class="fa-solid fa-filter"></i>
                   </span>
@@ -24,15 +24,15 @@
                     <option value="codigoCaja">Código de la caja</option>
                     <option value="telefonoRemitente">Teléfono remitente</option>
                     <option value="telefonoDestinatario">Teléfono destinatario</option>
-                    <option value="cajasSinPagar" onselect="true">Cajas Sin pagar</option>
+                    <option value="cajasSinPagar">Cajas sin pagar</option>
                   </select>
                 </div>
               </div>
 
               <!-- Input de búsqueda -->
-              <div class="col-12 col-md-6">
+              <div class="col-12" v-if="campo !== 'cajasSinPagar'">
                 <label for="termino" class="form-label">Término</label>
-                <div class="input-group">
+                <div class="input-group input-group-lg">
                   <span class="input-group-text">
                     <i class="fa-solid fa-magnifying-glass"></i>
                   </span>
@@ -41,9 +41,9 @@
               </div>
 
               <!-- Botón -->
-              <div class="col-12 text-center mt-3">
-                <button type="submit" class="btn btn-primary w-100 w-md-auto">
-                  <i class="fa-solid fa-search"></i> Buscar
+              <div class="col-12 mt-2">
+                <button type="submit" class="btn btn-primary btn-lg w-100">
+                  <i class="fa-solid fa-magnifying-glass"></i> Buscar
                 </button>
               </div>
 
@@ -56,18 +56,17 @@
   </div>
 
   <!-- Resultados -->
-  <div class="row"  style="padding: 35px;">
-    <div v-if="cajas && cajas.length > 0" class="d-block d-md-none">
+  <div v-if="buscado" class="row" style="padding: 0 20px 40px;">
+    <div v-if="cajas && cajas.length > 0" class="col-12 col-md-6 col-lg-4 offset-lg-4 offset-md-3" v-for="(caja, index) in cajas" :key="caja.id || index">
       <CardCaja
-        v-for="(caja, index) in cajas"
-        :key="caja.id || index"
         :caja="caja"
         :index="index"
         @eliminar="eliminar"
       />
     </div>
-    <div v-else class="col-12 text-center mt-3">
-      <p>No se han encontrado cajas.</p>
+    <div v-else class="col-12 text-center my-5 px-3">
+      <i class="fa-solid fa-magnifying-glass fa-3x text-muted mb-3"></i>
+      <p class="text-muted fs-5">No se han encontrado cajas.</p>
     </div>
   </div>
 
@@ -84,19 +83,9 @@ export default {
     return {
       campo: "",
       termino: "",
-      cajas: []  // inicializamos como array
+      cajas: [],
+      buscado: false
     };
-  },
-  mounted(){
-    document.getElementById("campo").addEventListener("change", function () {
-  const buscador = document.getElementById("termino");
-  
-  if (this.value === "cajasSinPagar") {
-    buscador.disabled = true; // Desactiva el input
-  } else {
-    buscador.disabled = false; // Lo vuelve a activar
-  }
-});
   },
   methods: {
     buscar() {
@@ -104,41 +93,30 @@ export default {
         show_alerta('Por favor, selecciona un campo.', 'warning', 'campo');
         return;
       }
-      if ((!this.termino || this.termino.trim() === '') && this.campo !== 'cajasSinPagar') {
-        console.log(this.campo);
+      if (!this.termino.trim() && this.campo !== 'cajasSinPagar') {
         show_alerta('Por favor, rellena un término.', 'warning', 'termino');
         return;
       }
-      if (this.campo == 'cajasSinPagar'){
-
+      if (this.campo === 'cajasSinPagar'){
         this.getCajasKeyValor('pagado', 0);
       }else{
-      //console.log(`Buscando ${this.campo}: ${this.termino}`);
-      this.getCajasKeyValor(this.campo, this.termino);
+        this.getCajasKeyValor(this.campo, this.termino);
       }
     },
 
-  getCajasKeyValor(key, valor) {
-  const url = ` ${process.env.VUE_APP_API_URL}/buscar/key=${encodeURIComponent(key)}/valor=${encodeURIComponent(valor)}`;
-  axios.get(url)
-    .then(response => {
-      console.log('Response data:', response.data);
-
-      // Si la respuesta es un objeto (como en tu ejemplo), lo convertimos a array
-      if (response.data && !Array.isArray(response.data)) {
-        this.cajas = [response.data]; // <-- aquí lo envolvemos en un array
-      } else {
-        this.cajas = response.data;
-      }
-
-      console.log('Cajas asignadas:', this.cajas);
-    })
-    .catch(error => {
-      console.error('Error en la búsqueda:', error);
-      this.cajas = [];
-    });
-},
-
+    getCajasKeyValor(key, valor) {
+      const url = `${process.env.VUE_APP_API_URL}/buscar/key=${encodeURIComponent(key)}/valor=${encodeURIComponent(valor)}`;
+      axios.get(url)
+        .then(response => {
+          this.cajas = Array.isArray(response.data) ? response.data : [response.data];
+          this.buscado = true;
+        })
+        .catch(error => {
+          console.error('Error en la búsqueda:', error);
+          this.cajas = [];
+          this.buscado = true;
+        });
+    },
 
     eliminar(id) {
       const caja = this.cajas.find(c => c.id === id);
@@ -147,6 +125,4 @@ export default {
     }
   }
 };
-
-
 </script>

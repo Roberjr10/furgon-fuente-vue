@@ -2,47 +2,47 @@
     <div class="row mt-3">
         <div class="col-md-6 offset-md-3">
             <div class="card">
-                <div class="card-header bg-primary text-white text-center"><h4>EDITAR PRODUCTO</h4></div>
-                <div class="card-body">
+                <div class="card-header bg-primary bg-opacity-50 text-white text-center"><h4>Editar Caja</h4></div>
+                <div class="card-body pb-0">
 
 
 <form @submit="guardar" novalidate class="container py-3">
     <div class="row g-3">
 
-        <!-- Sección REMITENTE -->
         <div class="col-12">
+            <label for="codigoCaja" class="form-label">Código de la caja <span class="text-muted fw-normal">(opcional)</span></label>
+            <div class="input-group input-group-lg">
+                <span class="input-group-text"><i class="fa-solid fa-barcode"></i></span>
+                <input type="text" id="codigoCaja" v-model="codigoCaja" class="form-control" maxlength="50" placeholder="Déjalo en blanco si aún no lo tienes" enterkeyhint="next">
+            </div>
+        </div>
+
+        <!-- Sección REMITENTE -->
+        <div class="col-12 mt-4">
             <h5 class="section-title">Datos del Remitente</h5>
         </div>
 
-        <div class="col-12 col-md-6">
+        <div class="col-12">
             <label for="remitente" class="form-label">Remitente</label>
-            <div class="input-group">
+            <div class="input-group input-group-lg">
                 <span class="input-group-text"><i class="fa-solid fa-user"></i></span>
-                <input type="text" id="remitente" v-model="remitente" class="form-control" maxlength="50" placeholder="Nombre del remitente" required>
+                <input type="text" id="remitente" v-model="remitente" class="form-control" maxlength="50" placeholder="Nombre del remitente" enterkeyhint="next" required>
             </div>
         </div>
 
-        <div class="col-12 col-md-6">
+        <div class="col-12">
             <label for="documentoRemitente" class="form-label">Documento del remitente <span class="text-muted fw-normal">(opcional)</span></label>
-            <div class="input-group">
+            <div class="input-group input-group-lg">
                 <span class="input-group-text"><i class="fa-solid fa-id-card"></i></span>
-                <input type="text" id="documentoRemitente" v-model="documentoRemitente" class="form-control" maxlength="50" placeholder="DNI, cédula, pasaporte...">
+                <input type="text" id="documentoRemitente" v-model="documentoRemitente" class="form-control" maxlength="50" placeholder="DNI, cédula, pasaporte..." enterkeyhint="next">
             </div>
         </div>
 
-        <div class="col-12 col-md-6">
-            <label for="fecha" class="form-label">Fecha</label>
-            <div class="input-group">
-                <span class="input-group-text"><i class="fa-solid fa-calendar-day"></i></span>
-                <input type="date" id="fecha" v-model="fecha" class="form-control" required>
-            </div>
-        </div>
-
-        <div class="col-12 col-md-6">
+        <div class="col-12">
             <label for="telefonoRemitente" class="form-label">Teléfono remitente</label>
-            <div class="input-group">
+            <div class="input-group input-group-lg">
                 <span class="input-group-text"><i class="fa-solid fa-phone"></i></span>
-                <input type="tel" id="telefonoRemitente" v-model="telefonoRemitente" class="form-control" maxlength="15" placeholder="Ej: +34 600 123 456" required>
+                <input type="tel" id="telefonoRemitente" v-model="telefonoRemitente" class="form-control" inputmode="tel" maxlength="15" placeholder="Ej: 600 123 456" enterkeyhint="next" required>
             </div>
         </div>
 
@@ -51,53 +51,37 @@
             <h5 class="section-title">Datos del Destinatario</h5>
         </div>
 
-        <div class="col-12 col-md-6">
+        <div class="col-12">
             <label for="destinatario" class="form-label">Destinatario</label>
-            <div class="input-group">
+            <div class="input-group input-group-lg">
                 <span class="input-group-text"><i class="fa-solid fa-user"></i></span>
-                <input type="text" id="destinatario" v-model="destinatario" class="form-control" maxlength="50" placeholder="Nombre del destinatario" required>
+                <input type="text" id="destinatario" v-model="destinatario" class="form-control" maxlength="50" placeholder="Nombre del destinatario" enterkeyhint="next" required>
+            </div>
+        </div>
+
+        <div class="col-12">
+            <label for="telefonoDestinatario" class="form-label">Teléfono destinatario</label>
+            <div class="input-group input-group-lg">
+                <span class="input-group-text"><i class="fa-solid fa-phone"></i></span>
+                <input type="tel" id="telefonoDestinatario" v-model="telefonoDestinatario" class="form-control" inputmode="tel" maxlength="15" placeholder="Ej: 600 987 654" enterkeyhint="next" required>
             </div>
         </div>
 
         <div class="col-12">
             <label for="direccion" class="form-label">Dirección</label>
-            <div class="input-group">
+            <div class="input-group input-group-lg">
                 <span class="input-group-text"><i class="fa-solid fa-location-dot"></i></span>
-                <textarea type="text" id="direccion" v-model="direccion" class="form-control" maxlength="100" placeholder="Dirección del destinatario" required></textarea>
-            </div>
-        </div>
-
-        <div class="col-12 col-md-6">
-            <label for="telefonoDestinatario" class="form-label">Teléfono destinatario</label>
-            <div class="input-group">
-                <span class="input-group-text"><i class="fa-solid fa-phone"></i></span>
-                <input type="tel" id="telefonoDestinatario" v-model="telefonoDestinatario" class="form-control" maxlength="15" placeholder="Ej: +34 600 987 654" required>
+                <textarea id="direccion" v-model="direccion" class="form-control" rows="2" maxlength="100" placeholder="Dirección del destinatario" required></textarea>
             </div>
         </div>
 
         <!-- Sección PAQUETE -->
-
         <div class="col-12 mt-4">
             <h5 class="section-title">Detalles del Paquete</h5>
         </div>
 
-        <div class="col-12 col-md-6">
-            <label for="codigoCaja" class="form-label">Código de la caja <span class="text-muted fw-normal">(opcional)</span></label>
-            <div class="input-group">
-                <span class="input-group-text"><i class="fa-solid fa-barcode"></i></span>
-                <input type="text" id="codigoCaja" v-model="codigoCaja" class="form-control" maxlength="50" placeholder="Ej: 181-001">
-            </div>
-        </div>
         <div class="col-12">
-            <label for="descripcion" class="form-label">Descripción</label>
-            <div class="input-group">
-                <span class="input-group-text"><i class="fa-solid fa-box"></i></span>
-                <textarea type="text" id="descripcion" v-model="descripcion" class="form-control" maxlength="100" placeholder="Descripción del paquete" required></textarea>
-            </div>
-        </div>
-
-        <div class="col-12">
-            <label class="form-label">Foto del paquete</label>
+            <label class="form-label">Foto del paquete (opcional)</label>
             <div v-if="cargandoFoto" class="text-center my-2">
                 <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
                 <span class="text-muted ms-2">Cargando foto...</span>
@@ -105,53 +89,77 @@
             <div v-if="fotoPreviewUrl" class="mb-2 text-center">
                 <img :src="fotoPreviewUrl" alt="Foto del paquete" class="foto-preview img-thumbnail">
             </div>
-            <button type="button" class="btn btn-outline-primary w-100" @click="$refs.inputFoto.click()">
-                <i class="fa-solid fa-camera"></i> {{ fotoPreviewUrl ? 'Cambiar foto' : 'Añadir foto' }}
+            <button type="button" class="btn btn-outline-primary btn-lg w-100" @click="$refs.inputFoto.click()">
+                <i class="fa-solid fa-camera"></i> {{ fotoPreviewUrl ? 'Cambiar foto' : 'Hacer foto' }}
             </button>
             <input ref="inputFoto" type="file" accept="image/*" capture="environment" class="d-none" @change="onFotoSeleccionada">
         </div>
 
-        <div class="col-12 col-md-6">
-            <label for="pagado" class="form-label">Pagado</label>
-            <div class="input-group">
-                <span class="input-group-text"><i class="fa-solid fa-money-bill"></i></span>
-                <select id="pagado" class="form-select" v-model="pagado" required>
-                    <option value="">Selecciona...</option>
-                    <option value="1">Sí</option>
-                    <option value="0">No</option>
-                </select>
+        <div class="col-12">
+            <label for="descripcion" class="form-label">Descripción</label>
+            <div class="input-group input-group-lg">
+                <span class="input-group-text"><i class="fa-solid fa-box"></i></span>
+                <textarea id="descripcion" v-model="descripcion" class="form-control" rows="2" maxlength="100" placeholder="Descripción del paquete" enterkeyhint="next" required></textarea>
             </div>
         </div>
 
         <div class="col-12 col-md-6">
             <label for="importe" class="form-label">Importe total</label>
-            <div class="input-group">
+            <div class="input-group input-group-lg">
                 <span class="input-group-text"><i class="fa-solid fa-dollar-sign"></i></span>
-                <input type="number" id="importe" v-model="importe" class="form-control" step="0.01" placeholder="Ej: 125.50" required>
+                <input type="number" id="importe" v-model="importe" class="form-control" inputmode="decimal" step="0.01" min="0" placeholder="Ej: 125.50" enterkeyhint="next" required>
             </div>
         </div>
-        <div class="col-12 col-md-6">
-            <label for="importePagado" class="form-label">Importe Pagado</label>
-            <div class="input-group">
-                <span class="input-group-text"><i class="fa-solid fa-dollar-sign"></i></span>
-                <input type="number" id="importePagado" v-model="importePagado" class="form-control" step="0.01" placeholder="Ej: 125.50" required>
-            </div>
-        </div>
+
         <div class="col-12 col-md-6">
             <label for="importeCrini" class="form-label">Importe pagar furgón</label>
-            <div class="input-group">
+            <div class="input-group input-group-lg">
                 <span class="input-group-text"><i class="fa-solid fa-dollar-sign"></i></span>
-                <input type="number" id="importeCrini" v-model="importeCrini" class="form-control" step="0.01" placeholder="Ej: 100.00" required>
+                <input type="number" id="importeCrini" v-model="importeCrini" class="form-control" inputmode="decimal" step="0.01" min="0" placeholder="Ej: 100.00" enterkeyhint="done" required>
             </div>
         </div>
 
-        <!-- Botón -->
-        <div class="col-12 text-center mt-3">
-            <button type="submit" class="btn btn-success w-100 w-md-auto">
-                <i class="fa-solid fa-floppy-disk"></i> Guardar
-            </button>
+        <div class="col-12">
+            <label for="fecha" class="form-label">Fecha</label>
+            <div class="input-group input-group-lg">
+                <span class="input-group-text"><i class="fa-solid fa-calendar-day"></i></span>
+                <input type="date" id="fecha" v-model="fecha" class="form-control" required>
+            </div>
         </div>
 
+        <!-- Pagado -->
+        <div class="col-12 mt-2">
+            <div class="form-check form-switch fs-5">
+                <input class="form-check-input" type="checkbox" role="switch" id="pagado" v-model="yaPagado" @change="onCambioPagado">
+                <label class="form-check-label" for="pagado">Ya está pagado</label>
+            </div>
+        </div>
+
+        <template v-if="yaPagado">
+            <div class="col-12 col-md-6">
+                <label for="importePagado" class="form-label">Importe pagado</label>
+                <div class="input-group input-group-lg">
+                    <span class="input-group-text"><i class="fa-solid fa-dollar-sign"></i></span>
+                    <input type="number" id="importePagado" v-model="importePagado" class="form-control" inputmode="decimal" step="0.01" min="0" placeholder="Ej: 125.50" required>
+                </div>
+            </div>
+
+            <div class="col-12 col-md-6">
+                <label for="fechaPagado" class="form-label">Fecha de pago</label>
+                <div class="input-group input-group-lg">
+                    <span class="input-group-text"><i class="fa-solid fa-calendar-day"></i></span>
+                    <input type="date" id="fechaPagado" v-model="fechaPagado" class="form-control" required>
+                </div>
+            </div>
+        </template>
+
+    </div>
+
+    <!-- Botón, fijo abajo para no tener que buscarlo con scroll en móvil -->
+    <div class="submit-bar mt-4 py-3">
+        <button type="submit" class="btn btn-primary btn-lg w-100">
+            <i class="fa-solid fa-floppy-disk"></i> Guardar
+        </button>
     </div>
 </form>
 
@@ -162,22 +170,7 @@
     </div>
 
 </template>
- <style>
-    .foto-preview {
-        max-width: 100%;
-        max-height: 260px;
-        object-fit: contain;
-    }
-    /* Estilo unificado para todos los títulos de sección */
-    .section-title {
-        color: #fdfdfd; /* Verde Bootstrap */
-        border-bottom: 3px solid #3c9eee;
-        background-color: #0e0586; /* Verde muy suave */
-        padding: 8px 12px;
-        border-radius: 6px;
-        font-weight: bold;
-    }
-</style>
+
 <script>
 import { show_alerta, enviarSolicitud } from '../funciones';
 import { comprimirImagen, subirFotoCaja, obtenerUrlFotoCaja } from '../utilFoto';
@@ -198,9 +191,9 @@ export default{
             direccion: '',
             telefonoDestinatario: '',
             descripcion: '',
-            pagado:'',
             importe:'',
             importeCrini:'',
+            yaPagado: false,
             fechaPagado: '',
             importePagado: '',
             fotoBlob: null,
@@ -221,6 +214,12 @@ export default{
         if (this.fotoPreviewUrl) URL.revokeObjectURL(this.fotoPreviewUrl);
     },
     methods: {
+        onCambioPagado(){
+            if(this.yaPagado){
+                this.fechaPagado = this.fechaPagado || new Date().toISOString().split('T')[0];
+                this.importePagado = this.importePagado || this.importe;
+            }
+        },
         async cargarFotoExistente(id){
             this.cargandoFoto = true;
             try{
@@ -254,7 +253,7 @@ export default{
                     this.direccion= response.data['direccion'],
                     this.telefonoDestinatario= response.data['telefonoDestinatario'],
                     this.descripcion= response.data['descripcion'],
-                    this.pagado= response.data['pagado'],
+                    this.yaPagado= !!Number(response.data['pagado']),
                     this.importe= response.data['importe'],
                     this.importeCrini= response.data['importeCrini'],
                     this.fechaPagado = response.data['fechaPagado'] ? new Date(response.data['fechaPagado']).toISOString().split('T')[0] : '',
@@ -283,16 +282,35 @@ export default{
                 direccion: this.direccion,
                 telefonoDestinatario: this.telefonoDestinatario,
                 descripcion: this.descripcion,
-                pagado: this.pagado,
+                pagado: this.yaPagado ? 1 : 0,
                 importe: this.importe,
                 importeCrini: this.importeCrini,
-                fechaPagado: this.fechaPagado,
-                importePagado: this.importePagado
+                fechaPagado: this.yaPagado ? this.fechaPagado : '',
+                importePagado: this.yaPagado ? this.importePagado : 0
             }
             const subirFoto = this.fotoBlob ? () => subirFotoCaja(this.id, this.fotoBlob) : null;
-            enviarSolicitud('PUT',parametros,this.urlModificar,'Producto actualizado',subirFoto)
+            enviarSolicitud('PUT',parametros,this.urlModificar,'Caja actualizada',subirFoto)
         }
     }
 }
 
 </script>
+
+<style scoped>
+.foto-preview {
+    max-width: 100%;
+    max-height: 260px;
+    object-fit: contain;
+}
+
+.submit-bar {
+    position: sticky;
+    bottom: 0;
+    background: #fff;
+    border-top: 1px solid var(--bs-border-color);
+    margin-left: -0.75rem;
+    margin-right: -0.75rem;
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+}
+</style>

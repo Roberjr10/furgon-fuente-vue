@@ -22,12 +22,28 @@
             <h5 class="section-title">Datos del Remitente</h5>
         </div>
 
-        <div class="col-12">
+        <div class="col-12 position-relative">
             <label for="remitente" class="form-label">Remitente</label>
             <div class="input-group input-group-lg">
                 <span class="input-group-text"><i class="fa-solid fa-user"></i></span>
-                <input type="text" id="remitente" v-model="remitente" class="form-control" maxlength="50" placeholder="Nombre del remitente" enterkeyhint="next" required>
+                <input
+                    type="text" id="remitente" v-model="remitente" class="form-control"
+                    maxlength="50" placeholder="Nombre del remitente" enterkeyhint="next" required
+                    autocomplete="off"
+                    @input="buscarRemitenteDebounced"
+                    @blur="ocultarSugerenciasConDelay('remitente')"
+                >
             </div>
+            <ul v-if="sugerenciasRemitente.length" class="list-group sugerencias-lista">
+                <li
+                    v-for="(s, i) in sugerenciasRemitente" :key="i"
+                    class="list-group-item list-group-item-action"
+                    @mousedown.prevent="seleccionarRemitente(s)"
+                >
+                    <div class="fw-bold">{{ s.remitente }}</div>
+                    <div class="text-muted small">{{ s.telefonoRemitente || 'sin teléfono guardado' }}</div>
+                </li>
+            </ul>
         </div>
 
         <div class="col-12">
@@ -51,12 +67,28 @@
             <h5 class="section-title">Datos del Destinatario</h5>
         </div>
 
-        <div class="col-12">
+        <div class="col-12 position-relative">
             <label for="destinatario" class="form-label">Destinatario</label>
             <div class="input-group input-group-lg">
                 <span class="input-group-text"><i class="fa-solid fa-user"></i></span>
-                <input type="text" id="destinatario" v-model="destinatario" class="form-control" maxlength="50" placeholder="Nombre del destinatario" enterkeyhint="next" required>
+                <input
+                    type="text" id="destinatario" v-model="destinatario" class="form-control"
+                    maxlength="50" placeholder="Nombre del destinatario" enterkeyhint="next" required
+                    autocomplete="off"
+                    @input="buscarDestinatarioDebounced"
+                    @blur="ocultarSugerenciasConDelay('destinatario')"
+                >
             </div>
+            <ul v-if="sugerenciasDestinatario.length" class="list-group sugerencias-lista">
+                <li
+                    v-for="(s, i) in sugerenciasDestinatario" :key="i"
+                    class="list-group-item list-group-item-action"
+                    @mousedown.prevent="seleccionarDestinatario(s)"
+                >
+                    <div class="fw-bold">{{ s.destinatario }}</div>
+                    <div class="text-muted small">{{ s.telefonoDestinatario || 'sin teléfono' }} · {{ s.direccion || 'sin dirección' }}</div>
+                </li>
+            </ul>
         </div>
 
         <div class="col-12">
@@ -173,6 +205,7 @@
 <script>
 import { show_alerta, enviarSolicitud } from '../funciones';
 import { comprimirImagen, subirFotoCaja } from '../utilFoto';
+import { buscarSugerenciasRemitente, buscarSugerenciasDestinatario } from '../utilSugerencias';
 
 export default{
     data(){
@@ -193,6 +226,8 @@ export default{
             importePagado: '',
             fotoBlob: null,
             fotoPreviewUrl: null,
+            sugerenciasRemitente: [],
+            sugerenciasDestinatario: [],
             url: `${process.env.VUE_APP_API_URL}/crearCaja/`
         }
     },
@@ -200,6 +235,49 @@ export default{
         if (this.fotoPreviewUrl) URL.revokeObjectURL(this.fotoPreviewUrl);
     },
     methods: {
+        buscarRemitenteDebounced(){
+            clearTimeout(this._timerRemitente);
+            this._timerRemitente = setTimeout(async () => {
+                const q = this.remitente.trim();
+                if (q.length < 2) { this.sugerenciasRemitente = []; return; }
+                try {
+                    this.sugerenciasRemitente = await buscarSugerenciasRemitente(q);
+                } catch (error) {
+                    console.error('Error al buscar sugerencias de remitente:', error);
+                }
+            }, 300);
+        },
+        seleccionarRemitente(s){
+            this.remitente = s.remitente;
+            this.documentoRemitente = s.documentoRemitente || this.documentoRemitente;
+            this.telefonoRemitente = s.telefonoRemitente || this.telefonoRemitente;
+            this.sugerenciasRemitente = [];
+        },
+        buscarDestinatarioDebounced(){
+            clearTimeout(this._timerDestinatario);
+            this._timerDestinatario = setTimeout(async () => {
+                const q = this.destinatario.trim();
+                if (q.length < 2) { this.sugerenciasDestinatario = []; return; }
+                try {
+                    this.sugerenciasDestinatario = await buscarSugerenciasDestinatario(q);
+                } catch (error) {
+                    console.error('Error al buscar sugerencias de destinatario:', error);
+                }
+            }, 300);
+        },
+        seleccionarDestinatario(s){
+            this.destinatario = s.destinatario;
+            this.telefonoDestinatario = s.telefonoDestinatario || this.telefonoDestinatario;
+            this.direccion = s.direccion || this.direccion;
+            this.sugerenciasDestinatario = [];
+        },
+        ocultarSugerenciasConDelay(campo){
+            // delay para que el mousedown de la sugerencia (si el usuario esta tocando una) alcance a dispararse antes
+            setTimeout(() => {
+                if (campo === 'remitente') this.sugerenciasRemitente = [];
+                else this.sugerenciasDestinatario = [];
+            }, 200);
+        },
         onCambioPagado(){
             if(this.yaPagado){
                 this.fechaPagado = this.fechaPagado || new Date().toISOString().split('T')[0];
@@ -258,6 +336,18 @@ export default{
 </script>
 
 <style scoped>
+.sugerencias-lista {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    z-index: 30;
+    max-height: 240px;
+    overflow-y: auto;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.18);
+    border-radius: 0 0 8px 8px;
+}
+
 .foto-preview {
     max-width: 100%;
     max-height: 260px;

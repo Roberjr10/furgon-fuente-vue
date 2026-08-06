@@ -68,14 +68,14 @@ export default {
 
 <style scoped>
 .login-page {
-  background: #ffffff; /* fondo blanco */
+  background: var(--bs-body-bg);
 }
 
 .login-card {
   background: #ffffff;
-  border-radius: 12px;
-  border: 2px solid #0d6efd; /* borde azul sólido */
-  box-shadow: 0 0 15px rgba(13, 110, 253, 0.3); /* sombra azul */
+  border-radius: 18px;
+  border: 1.5px solid #e9e2d4;
+  box-shadow: 0 4px 20px rgba(31, 61, 54, 0.12);
   max-width: 400px;
   width: 90%;
 }
@@ -88,12 +88,12 @@ export default {
 }
 
 .input-custom:focus {
-  border-color: #0d6efd;
-  box-shadow: 0 0 5px rgba(13, 110, 253, 0.5);
+  border-color: var(--furgon-teal);
+  box-shadow: 0 0 5px rgba(15, 110, 86, 0.5);
 }
 
 .btn-hover:hover {
-  background-color: #0b5ed7;
-  box-shadow: 0 4px 10px rgba(13, 110, 253, 0.3);
+  background-color: var(--furgon-teal-dark);
+  box-shadow: 0 4px 10px rgba(15, 110, 86, 0.3);
 }
 </style>

@@ -156,7 +156,7 @@
 
     <!-- Botón, fijo abajo para no tener que buscarlo con scroll en móvil -->
     <div class="submit-bar mt-4 py-3">
-        <button type="submit" class="btn btn-success btn-lg w-100">
+        <button type="submit" class="btn btn-primary btn-lg w-100">
             <i class="fa-solid fa-floppy-disk"></i> Guardar
         </button>
     </div>
@@ -258,15 +258,6 @@ export default{
 </script>
 
 <style scoped>
-.section-title {
-    color: #fdfdfd;
-    border-bottom: 3px solid #3c9eee;
-    background-color: #0e0586;
-    padding: 8px 12px;
-    border-radius: 6px;
-    font-weight: bold;
-}
-
 .foto-preview {
     max-width: 100%;
     max-height: 260px;
@@ -277,6 +268,7 @@ export default{
     position: sticky;
     bottom: 0;
     background: #fff;
+    border-top: 1px solid var(--bs-border-color);
     margin-left: -0.75rem;
     margin-right: -0.75rem;
     padding-left: 0.75rem;

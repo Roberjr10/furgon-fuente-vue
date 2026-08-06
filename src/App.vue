@@ -58,6 +58,16 @@
             </li>
             <li class="nav-item">
               <router-link
+                to="/carga-rapida"
+                class="nav-link"
+                active-class="active"
+                @click="closeCollapse"
+              >
+                Carga rápida
+              </router-link>
+            </li>
+            <li class="nav-item">
+              <router-link
                 to="/search"
                 class="nav-link"
                 active-class="active"

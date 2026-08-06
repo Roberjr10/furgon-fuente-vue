@@ -1,7 +1,10 @@
 import axios from 'axios';
 
-export async function crearInforme(cajaIds) {
-    const respuesta = await axios.post(`${process.env.VUE_APP_API_URL}/informes`, { cajaIds });
+// tipo: 'completo' (todos los datos, sin firma, para mandar a la empresa antes
+// de tener el código) o 'con_codigo' (remitente/destinatario/descripción/código
+// + firma, una vez la empresa ya asignó los códigos).
+export async function crearInforme(cajaIds, tipo = 'completo') {
+    const respuesta = await axios.post(`${process.env.VUE_APP_API_URL}/informes`, { cajaIds, tipo });
     return respuesta.data;
 }
 

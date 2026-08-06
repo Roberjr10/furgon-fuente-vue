@@ -21,7 +21,12 @@
       <div v-for="informe in informes" :key="informe.id" class="card mb-3 shadow-sm">
         <div class="card-body d-flex justify-content-between align-items-center">
           <div>
-            <h5 class="mb-1">Informe #{{ informe.id }}</h5>
+            <div class="d-flex align-items-center gap-2 mb-1">
+              <h5 class="mb-0">Informe #{{ informe.id }}</h5>
+              <span :class="['badge', informe.tipo === 'con_codigo' ? 'bg-success' : 'bg-primary']">
+                {{ informe.tipo === 'con_codigo' ? 'Con código' : 'Completo' }}
+              </span>
+            </div>
             <p class="text-muted mb-1">{{ formatoFecha(informe.fecha_generado) }}</p>
             <p class="mb-0"><i class="fa-solid fa-box"></i> {{ informe.total_cajas }} caja(s)</p>
           </div>

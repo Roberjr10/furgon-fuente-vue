@@ -15,6 +15,27 @@
     </button>
   </div>
 
+  <!-- Filtro y selección rápida, solo visibles en modo selección -->
+  <div v-if="modoSeleccion" class="text-center mb-3 px-3">
+    <div class="btn-group mb-2" role="group">
+      <button
+        v-for="opcion in filtrosCodigo"
+        :key="opcion.valor"
+        type="button"
+        class="btn"
+        :class="filtroCodigo === opcion.valor ? 'btn-primary' : 'btn-outline-primary'"
+        @click="filtroCodigo = opcion.valor"
+      >
+        {{ opcion.etiqueta }}
+      </button>
+    </div>
+    <div>
+      <button class="btn btn-outline-secondary btn-sm" @click="seleccionarVisibles">
+        <i class="fa-solid fa-check-double"></i> Seleccionar las {{ cajasFiltradas.length }} de esta lista
+      </button>
+    </div>
+  </div>
+
   <div v-if="cargando" class="text-center my-5">
     <div class="spinner-border text-primary" style="width:3rem;height:3rem;" role="status"></div>
     <p class="text-muted fs-5 mt-3">Cargando cajas...</p>
@@ -28,8 +49,12 @@
     </router-link>
   </div>
 
-  <div v-else class="row" :style="{ padding: '20px 20px ' + (modoSeleccion && seleccionadas.length ? '110px' : '90px') }">
-    <div class="col-12 col-md-6 col-lg-4" v-for="(caja, index) in cajas" :key="caja.id">
+  <div v-else-if="modoSeleccion && cajasFiltradas.length === 0" class="text-center my-5 px-3">
+    <p class="text-muted fs-5">No hay cajas que coincidan con este filtro.</p>
+  </div>
+
+  <div v-else class="row" :style="{ padding: '20px 20px ' + (modoSeleccion && seleccionadas.length ? '150px' : '90px') }">
+    <div class="col-12 col-md-6 col-lg-4" v-for="(caja, index) in cajasFiltradas" :key="caja.id">
       <CardCaja
         :caja="caja"
         :index="index"
@@ -54,12 +79,19 @@
 
   <!-- Barra fija: crear informe con lo seleccionado -->
   <div v-if="modoSeleccion && seleccionadas.length" class="barra-informe shadow">
-    <span class="fs-5 fw-bold">{{ seleccionadas.length }} caja(s) seleccionada(s)</span>
-    <button class="btn btn-success btn-lg" :disabled="creandoInforme" @click="crearInformeSeleccion">
-      <span v-if="creandoInforme" class="spinner-border spinner-border-sm me-1"></span>
-      <i v-else class="fa-solid fa-file-pdf"></i>
-      Crear informe
-    </button>
+    <span class="fs-5 fw-bold mb-2">{{ seleccionadas.length }} caja(s) seleccionada(s)</span>
+    <div class="d-grid gap-2 d-sm-flex">
+      <button class="btn btn-primary btn-lg flex-fill" :disabled="creandoInforme" @click="crearInformeSeleccion('completo')">
+        <span v-if="creandoInforme === 'completo'" class="spinner-border spinner-border-sm me-1"></span>
+        <i v-else class="fa-solid fa-file-lines"></i>
+        Informe completo
+      </button>
+      <button class="btn btn-success btn-lg flex-fill" :disabled="creandoInforme" @click="crearInformeSeleccion('con_codigo')">
+        <span v-if="creandoInforme === 'con_codigo'" class="spinner-border spinner-border-sm me-1"></span>
+        <i v-else class="fa-solid fa-file-pdf"></i>
+        Informe con código
+      </button>
+    </div>
   </div>
 </template>
 
@@ -78,8 +110,21 @@ export default {
       modoSeleccion: false,
       seleccionadas: [],
       cajasIncluidas: {},
-      creandoInforme: false
+      creandoInforme: false,
+      filtroCodigo: 'todas',
+      filtrosCodigo: [
+        { valor: 'todas', etiqueta: 'Todas' },
+        { valor: 'sin', etiqueta: 'Sin código' },
+        { valor: 'con', etiqueta: 'Con código' }
+      ]
     };
+  },
+  computed: {
+    cajasFiltradas() {
+      if (!this.modoSeleccion || this.filtroCodigo === 'todas') return this.cajas;
+      if (this.filtroCodigo === 'sin') return this.cajas.filter(c => !c.codigoCaja);
+      return this.cajas.filter(c => !!c.codigoCaja);
+    }
   },
   async mounted() {
     await this.getCajas();
@@ -114,6 +159,7 @@ export default {
     async alternarModoSeleccion() {
       this.modoSeleccion = !this.modoSeleccion;
       this.seleccionadas = [];
+      this.filtroCodigo = 'todas';
       if (this.modoSeleccion) {
         try {
           this.cajasIncluidas = await obtenerCajasIncluidasEnInformes();
@@ -122,18 +168,21 @@ export default {
         }
       }
     },
-    toggleSeleccion(codigoCaja) {
-      const i = this.seleccionadas.indexOf(codigoCaja);
+    toggleSeleccion(id) {
+      const i = this.seleccionadas.indexOf(id);
       if (i === -1) {
-        this.seleccionadas.push(codigoCaja);
+        this.seleccionadas.push(id);
       } else {
         this.seleccionadas.splice(i, 1);
       }
     },
-    async crearInformeSeleccion() {
-      this.creandoInforme = true;
+    seleccionarVisibles() {
+      this.seleccionadas = this.cajasFiltradas.map(c => c.id);
+    },
+    async crearInformeSeleccion(tipo) {
+      this.creandoInforme = tipo;
       try {
-        const { informe_id } = await crearInforme(this.seleccionadas);
+        const { informe_id } = await crearInforme(this.seleccionadas, tipo);
         const url = await obtenerUrlInformePdf(informe_id);
         descargarBlobUrl(url, `informe-${informe_id}.pdf`);
         show_alerta('Informe creado y descargado', 'success');
@@ -172,8 +221,7 @@ export default {
   background: #fff;
   padding: 14px 20px;
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  flex-direction: column;
   z-index: 20;
   border-top: 3px solid #0d6efd;
 }

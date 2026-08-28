@@ -23,7 +23,7 @@
         </div>
 
         <div class="col-12 position-relative">
-            <label for="remitente" class="form-label">Remitente</label>
+            <label for="remitente" class="form-label">Remitente <span class="text-danger">*</span></label>
             <div class="input-group input-group-lg">
                 <span class="input-group-text"><i class="fa-solid fa-user"></i></span>
                 <input
@@ -55,7 +55,7 @@
         </div>
 
         <div class="col-12">
-            <label for="telefonoRemitente" class="form-label">Teléfono remitente</label>
+            <label for="telefonoRemitente" class="form-label">Teléfono remitente <span class="text-danger">*</span></label>
             <div class="input-group input-group-lg">
                 <span class="input-group-text"><i class="fa-solid fa-phone"></i></span>
                 <input type="tel" id="telefonoRemitente" v-model="telefonoRemitente" class="form-control" inputmode="tel" maxlength="15" placeholder="Ej: 600 123 456" enterkeyhint="next" required>
@@ -68,7 +68,7 @@
         </div>
 
         <div class="col-12 position-relative">
-            <label for="destinatario" class="form-label">Destinatario</label>
+            <label for="destinatario" class="form-label">Destinatario <span class="text-danger">*</span></label>
             <div class="input-group input-group-lg">
                 <span class="input-group-text"><i class="fa-solid fa-user"></i></span>
                 <input
@@ -92,7 +92,7 @@
         </div>
 
         <div class="col-12">
-            <label for="telefonoDestinatario" class="form-label">Teléfono destinatario</label>
+            <label for="telefonoDestinatario" class="form-label">Teléfono destinatario <span class="text-danger">*</span></label>
             <div class="input-group input-group-lg">
                 <span class="input-group-text"><i class="fa-solid fa-phone"></i></span>
                 <input type="tel" id="telefonoDestinatario" v-model="telefonoDestinatario" class="form-control" inputmode="tel" maxlength="15" placeholder="Ej: 600 987 654" enterkeyhint="next" required>
@@ -100,7 +100,7 @@
         </div>
 
         <div class="col-12">
-            <label for="direccion" class="form-label">Dirección</label>
+            <label for="direccion" class="form-label">Dirección <span class="text-danger">*</span></label>
             <div class="input-group input-group-lg">
                 <span class="input-group-text"><i class="fa-solid fa-location-dot"></i></span>
                 <textarea id="direccion" v-model="direccion" class="form-control" rows="2" maxlength="100" placeholder="Dirección del destinatario" required></textarea>
@@ -127,7 +127,7 @@
         </div>
 
         <div class="col-12">
-            <label for="descripcion" class="form-label">Descripción</label>
+            <label for="descripcion" class="form-label">Descripción <span class="text-danger">*</span></label>
             <div class="input-group input-group-lg">
                 <span class="input-group-text"><i class="fa-solid fa-box"></i></span>
                 <textarea id="descripcion" v-model="descripcion" class="form-control" rows="2" maxlength="100" placeholder="Descripción del paquete" enterkeyhint="next" required></textarea>
@@ -135,7 +135,7 @@
         </div>
 
         <div class="col-12 col-md-6">
-            <label for="importe" class="form-label">Importe total</label>
+            <label for="importe" class="form-label">Importe total <span class="text-danger">*</span></label>
             <div class="input-group input-group-lg">
                 <span class="input-group-text"><i class="fa-solid fa-dollar-sign"></i></span>
                 <input type="number" id="importe" v-model="importe" class="form-control" inputmode="decimal" step="0.01" min="0" placeholder="Ej: 125.50" enterkeyhint="next" required>
@@ -143,7 +143,7 @@
         </div>
 
         <div class="col-12 col-md-6">
-            <label for="importeCrini" class="form-label">Importe pagar furgón</label>
+            <label for="importeCrini" class="form-label">Importe pagar furgón <span class="text-danger">*</span></label>
             <div class="input-group input-group-lg">
                 <span class="input-group-text"><i class="fa-solid fa-dollar-sign"></i></span>
                 <input type="number" id="importeCrini" v-model="importeCrini" class="form-control" inputmode="decimal" step="0.01" min="0" placeholder="Ej: 100.00" enterkeyhint="done" required>
@@ -151,7 +151,7 @@
         </div>
 
         <div class="col-12">
-            <label for="fecha" class="form-label">Fecha</label>
+            <label for="fecha" class="form-label">Fecha <span class="text-danger">*</span></label>
             <div class="input-group input-group-lg">
                 <span class="input-group-text"><i class="fa-solid fa-calendar-day"></i></span>
                 <input type="date" id="fecha" v-model="fecha" class="form-control" required>
@@ -168,7 +168,7 @@
 
         <template v-if="yaPagado">
             <div class="col-12 col-md-6">
-                <label for="importePagado" class="form-label">Importe pagado</label>
+                <label for="importePagado" class="form-label">Importe pagado <span class="text-danger">*</span></label>
                 <div class="input-group input-group-lg">
                     <span class="input-group-text"><i class="fa-solid fa-dollar-sign"></i></span>
                     <input type="number" id="importePagado" v-model="importePagado" class="form-control" inputmode="decimal" step="0.01" min="0" placeholder="Ej: 125.50" required>
@@ -176,7 +176,7 @@
             </div>
 
             <div class="col-12 col-md-6">
-                <label for="fechaPagado" class="form-label">Fecha de pago</label>
+                <label for="fechaPagado" class="form-label">Fecha de pago <span class="text-danger">*</span></label>
                 <div class="input-group input-group-lg">
                     <span class="input-group-text"><i class="fa-solid fa-calendar-day"></i></span>
                     <input type="date" id="fechaPagado" v-model="fechaPagado" class="form-control" required>

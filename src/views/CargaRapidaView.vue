@@ -42,7 +42,7 @@
 
         <p class="cr-subhead">Remitente <span v-if="remitente" class="text-muted fw-normal text-uppercase" style="letter-spacing:0;">(precargado)</span></p>
         <div class="cr-field">
-          <label for="cr-remitente">Remitente</label>
+          <label for="cr-remitente">Remitente <span class="text-danger">*</span></label>
           <div class="cr-input-group" :class="{ prefilled: remitente }">
             <i class="fa-solid fa-user"></i>
             <input id="cr-remitente" v-model="remitente" type="text" maxlength="50" placeholder="Nombre del remitente" required>
@@ -60,7 +60,7 @@
           </div>
           <div class="col-6">
             <div class="cr-field">
-              <label for="cr-tel-remitente">Teléfono</label>
+              <label for="cr-tel-remitente">Teléfono <span class="text-danger">*</span></label>
               <div class="cr-input-group" :class="{ prefilled: telefonoRemitente }">
                 <i class="fa-solid fa-phone"></i>
                 <input id="cr-tel-remitente" v-model="telefonoRemitente" type="tel" inputmode="tel" maxlength="15" placeholder="600 123 456" required>
@@ -71,21 +71,21 @@
 
         <p class="cr-subhead">Destinatario</p>
         <div class="cr-field">
-          <label for="cr-destinatario">Destinatario</label>
+          <label for="cr-destinatario">Destinatario <span class="text-danger">*</span></label>
           <div class="cr-input-group">
             <i class="fa-solid fa-user"></i>
             <input id="cr-destinatario" ref="primerCampo" v-model="destinatario" type="text" maxlength="50" placeholder="Nombre del destinatario" required>
           </div>
         </div>
         <div class="cr-field">
-          <label for="cr-tel-destinatario">Teléfono destinatario</label>
+          <label for="cr-tel-destinatario">Teléfono destinatario <span class="text-danger">*</span></label>
           <div class="cr-input-group">
             <i class="fa-solid fa-phone"></i>
             <input id="cr-tel-destinatario" v-model="telefonoDestinatario" type="tel" inputmode="tel" maxlength="15" placeholder="Ej: 600 987 654" required>
           </div>
         </div>
         <div class="cr-field">
-          <label for="cr-direccion">Dirección</label>
+          <label for="cr-direccion">Dirección <span class="text-danger">*</span></label>
           <div class="cr-input-group">
             <i class="fa-solid fa-location-dot"></i>
             <input id="cr-direccion" v-model="direccion" type="text" maxlength="100" placeholder="Dirección del destinatario" required>
@@ -105,7 +105,7 @@
           </div>
           <div class="col-6">
             <div class="cr-field">
-              <label for="cr-fecha">Fecha</label>
+              <label for="cr-fecha">Fecha <span class="text-danger">*</span></label>
               <div class="cr-input-group" :class="{ prefilled: fecha }">
                 <i class="fa-solid fa-calendar-day"></i>
                 <input id="cr-fecha" v-model="fecha" type="date" required>
@@ -114,7 +114,7 @@
           </div>
         </div>
         <div class="cr-field">
-          <label for="cr-descripcion">Descripción</label>
+          <label for="cr-descripcion">Descripción <span class="text-danger">*</span></label>
           <div class="cr-input-group">
             <i class="fa-solid fa-box"></i>
             <input id="cr-descripcion" v-model="descripcion" type="text" maxlength="100" placeholder="Descripción del paquete" required>
@@ -123,7 +123,7 @@
         <div class="row g-2">
           <div class="col-6">
             <div class="cr-field">
-              <label for="cr-importe">Importe total</label>
+              <label for="cr-importe">Importe total <span class="text-danger">*</span></label>
               <div class="cr-input-group">
                 <i class="fa-solid fa-dollar-sign"></i>
                 <input id="cr-importe" v-model="importe" type="number" inputmode="decimal" step="0.01" min="0" placeholder="Ej: 75.00" required>
@@ -132,7 +132,7 @@
           </div>
           <div class="col-6">
             <div class="cr-field">
-              <label for="cr-importe-crini">Pagar furgón</label>
+              <label for="cr-importe-crini">Pagar furgón <span class="text-danger">*</span></label>
               <div class="cr-input-group">
                 <i class="fa-solid fa-dollar-sign"></i>
                 <input id="cr-importe-crini" v-model="importeCrini" type="number" inputmode="decimal" step="0.01" min="0" placeholder="Ej: 60.00" required>
@@ -162,7 +162,7 @@
           <div class="row g-2">
             <div class="col-6">
               <div class="cr-field">
-                <label for="cr-importe-pagado">Importe pagado</label>
+                <label for="cr-importe-pagado">Importe pagado <span class="text-danger">*</span></label>
                 <div class="cr-input-group">
                   <i class="fa-solid fa-dollar-sign"></i>
                   <input id="cr-importe-pagado" v-model="importePagado" type="number" inputmode="decimal" step="0.01" min="0" required>
@@ -171,7 +171,7 @@
             </div>
             <div class="col-6">
               <div class="cr-field">
-                <label for="cr-fecha-pagado">Fecha de pago</label>
+                <label for="cr-fecha-pagado">Fecha de pago <span class="text-danger">*</span></label>
                 <div class="cr-input-group">
                   <i class="fa-solid fa-calendar-day"></i>
                   <input id="cr-fecha-pagado" v-model="fechaPagado" type="date" required>

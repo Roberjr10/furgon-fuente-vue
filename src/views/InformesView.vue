@@ -19,20 +19,18 @@
   <div v-else class="row justify-content-center px-3" style="padding-bottom: 40px;">
     <div class="col-12 col-md-8 col-lg-6">
       <div v-for="informe in informes" :key="informe.id" class="card mb-3 shadow-sm">
-        <div class="card-body d-flex justify-content-between align-items-center">
-          <div>
-            <div class="d-flex align-items-center gap-2 mb-1">
-              <h5 class="mb-0">Informe #{{ informe.id }}</h5>
-              <span :class="['badge', informe.tipo === 'con_codigo' ? 'bg-terracotta' : 'bg-primary']">
-                {{ informe.tipo === 'con_codigo' ? 'Con código' : 'Completo' }}
-              </span>
-            </div>
-            <p class="text-muted mb-1">{{ formatoFecha(informe.fecha_generado) }}</p>
-            <p class="mb-0"><i class="fa-solid fa-box"></i> {{ informe.total_cajas }} caja(s)</p>
+        <div class="card-body">
+          <div class="d-flex align-items-center gap-2 mb-1">
+            <h5 class="mb-0">Informe #{{ informe.id }}</h5>
+            <span :class="['badge', informe.tipo === 'con_codigo' ? 'bg-terracotta' : 'bg-primary']">
+              {{ informe.tipo === 'con_codigo' ? 'Con código' : 'Completo' }}
+            </span>
           </div>
-          <div class="d-flex flex-column gap-2">
+          <p class="text-muted mb-1">{{ formatoFecha(informe.fecha_generado) }}</p>
+          <p class="mb-3"><i class="fa-solid fa-box"></i> {{ informe.total_cajas }} caja(s)</p>
+          <div class="d-flex gap-2 flex-wrap">
             <button
-              class="btn btn-terracotta btn-lg"
+              class="btn btn-terracotta flex-fill"
               :disabled="compartiendo === informe.id"
               @click="compartir(informe)"
             >
@@ -41,7 +39,7 @@
               Compartir
             </button>
             <button
-              class="btn btn-primary"
+              class="btn btn-primary flex-fill"
               :disabled="descargando === informe.id"
               @click="descargar(informe)"
             >
@@ -50,7 +48,7 @@
               Descargar
             </button>
             <button
-              class="btn btn-outline-danger"
+              class="btn btn-outline-danger flex-fill"
               :disabled="borrando === informe.id"
               @click="borrar(informe)"
             >

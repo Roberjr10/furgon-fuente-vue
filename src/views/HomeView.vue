@@ -100,6 +100,7 @@ import axios from 'axios';
 import CardCaja from './CardCaja.vue';
 import { confirmar, show_alerta } from '../funciones';
 import { crearInforme, obtenerCajasIncluidasEnInformes, obtenerBlobInformePdf, abrirBlob, compartirBlobPdf } from '../utilInformes';
+import Swal from 'sweetalert2';
 
 export default {
   components: { CardCaja },
@@ -184,11 +185,25 @@ export default {
       try {
         const { informe_id } = await crearInforme(this.seleccionadas, tipo);
         const blob = await obtenerBlobInformePdf(informe_id);
-        const compartido = await compartirBlobPdf(blob, `informe-${informe_id}.pdf`);
-        if (!compartido) abrirBlob(blob);
-        show_alerta('Informe creado', 'success');
         this.modoSeleccion = false;
         this.seleccionadas = [];
+
+        const eleccion = await Swal.fire({
+          title: 'Informe creado',
+          text: '¿Qué querés hacer con el PDF?',
+          icon: 'success',
+          showDenyButton: true,
+          confirmButtonText: '<i class="fa-solid fa-download"></i> Descargar',
+          denyButtonText: '<i class="fa-solid fa-share-nodes"></i> Compartir',
+          customClass: { confirmButton: 'btn btn-primary m-2', denyButton: 'btn btn-terracotta m-2' },
+          buttonsStyling: false
+        });
+        if (eleccion.isConfirmed) {
+          abrirBlob(blob);
+        } else if (eleccion.isDenied) {
+          const compartido = await compartirBlobPdf(blob, `informe-${informe_id}.pdf`);
+          if (!compartido) abrirBlob(blob);
+        }
       } catch (error) {
         console.error('Error al crear el informe:', error);
         show_alerta('No se pudo crear el informe', 'error');

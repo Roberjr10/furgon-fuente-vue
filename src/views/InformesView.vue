@@ -32,7 +32,16 @@
           </div>
           <div class="d-flex flex-column gap-2">
             <button
-              class="btn btn-primary btn-lg"
+              class="btn btn-terracotta btn-lg"
+              :disabled="compartiendo === informe.id"
+              @click="compartir(informe)"
+            >
+              <span v-if="compartiendo === informe.id" class="spinner-border spinner-border-sm"></span>
+              <i v-else class="fa-solid fa-share-nodes"></i>
+              Compartir
+            </button>
+            <button
+              class="btn btn-primary"
               :disabled="descargando === informe.id"
               @click="descargar(informe)"
             >
@@ -57,7 +66,7 @@
 </template>
 
 <script>
-import { listarInformes, obtenerUrlInformePdf, descargarBlobUrl, borrarInforme } from '../utilInformes';
+import { listarInformes, obtenerBlobInformePdf, abrirBlob, compartirBlobPdf, borrarInforme } from '../utilInformes';
 import { show_alerta } from '../funciones';
 import Swal from 'sweetalert2';
 
@@ -67,6 +76,7 @@ export default {
       informes: [],
       cargando: true,
       descargando: null,
+      compartiendo: null,
       borrando: null
     };
   },
@@ -88,13 +98,26 @@ export default {
     async descargar(informe) {
       this.descargando = informe.id;
       try {
-        const url = await obtenerUrlInformePdf(informe.id);
-        descargarBlobUrl(url, `informe-${informe.id}.pdf`);
+        const blob = await obtenerBlobInformePdf(informe.id);
+        abrirBlob(blob);
       } catch (error) {
         console.error('Error al descargar el informe:', error);
         show_alerta('No se pudo descargar el informe', 'error');
       } finally {
         this.descargando = null;
+      }
+    },
+    async compartir(informe) {
+      this.compartiendo = informe.id;
+      try {
+        const blob = await obtenerBlobInformePdf(informe.id);
+        const compartido = await compartirBlobPdf(blob, `informe-${informe.id}.pdf`);
+        if (!compartido) abrirBlob(blob);
+      } catch (error) {
+        console.error('Error al compartir el informe:', error);
+        show_alerta('No se pudo compartir el informe', 'error');
+      } finally {
+        this.compartiendo = null;
       }
     },
     async borrar(informe) {

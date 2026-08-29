@@ -19,22 +19,38 @@ export async function obtenerCajasIncluidasEnInformes() {
     return respuesta.data;
 }
 
-export async function obtenerUrlInformePdf(informeId) {
+export async function obtenerBlobInformePdf(informeId) {
     const respuesta = await axios.get(`${process.env.VUE_APP_API_URL}/informes/${informeId}/pdf`, {
         responseType: 'blob'
     });
-    return URL.createObjectURL(respuesta.data);
+    return respuesta.data;
 }
 
 export async function borrarInforme(informeId) {
     await axios.delete(`${process.env.VUE_APP_API_URL}/informes/${informeId}`);
 }
 
-export function descargarBlobUrl(url, nombreArchivo) {
-    const enlace = document.createElement('a');
-    enlace.href = url;
-    enlace.download = nombreArchivo;
-    document.body.appendChild(enlace);
-    enlace.click();
-    document.body.removeChild(enlace);
+// window.open en vez de <a download>: en Safari/Chrome móvil el download
+// attribute sobre un blob no es confiable (falla en silencio, sobre todo
+// después de un await). Abrir en pestaña nueva usa el visor de PDF nativo,
+// desde donde el usuario puede guardarlo o compartirlo igual.
+export function abrirBlob(blob) {
+    window.open(URL.createObjectURL(blob), '_blank');
+}
+
+// Web Share API con archivos: abre el panel nativo (WhatsApp, mail, etc.)
+// directo con el PDF adjunto. Devuelve false si el navegador no lo soporta
+// (Safari/Chrome de escritorio, navegadores viejos) para poder hacer fallback.
+export async function compartirBlobPdf(blob, nombreArchivo) {
+    const archivo = new File([blob], nombreArchivo, { type: 'application/pdf' });
+    if (!navigator.canShare || !navigator.canShare({ files: [archivo] })) {
+        return false;
+    }
+    try {
+        await navigator.share({ files: [archivo], title: nombreArchivo });
+        return true;
+    } catch (error) {
+        if (error.name === 'AbortError') return true; // el usuario canceló el share, no es un fallo
+        throw error;
+    }
 }

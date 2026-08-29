@@ -99,7 +99,7 @@
 import axios from 'axios';
 import CardCaja from './CardCaja.vue';
 import { confirmar, show_alerta } from '../funciones';
-import { crearInforme, obtenerCajasIncluidasEnInformes, obtenerUrlInformePdf, descargarBlobUrl } from '../utilInformes';
+import { crearInforme, obtenerCajasIncluidasEnInformes, obtenerBlobInformePdf, abrirBlob, compartirBlobPdf } from '../utilInformes';
 
 export default {
   components: { CardCaja },
@@ -183,9 +183,10 @@ export default {
       this.creandoInforme = tipo;
       try {
         const { informe_id } = await crearInforme(this.seleccionadas, tipo);
-        const url = await obtenerUrlInformePdf(informe_id);
-        descargarBlobUrl(url, `informe-${informe_id}.pdf`);
-        show_alerta('Informe creado y descargado', 'success');
+        const blob = await obtenerBlobInformePdf(informe_id);
+        const compartido = await compartirBlobPdf(blob, `informe-${informe_id}.pdf`);
+        if (!compartido) abrirBlob(blob);
+        show_alerta('Informe creado', 'success');
         this.modoSeleccion = false;
         this.seleccionadas = [];
       } catch (error) {

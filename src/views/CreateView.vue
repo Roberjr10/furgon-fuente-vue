@@ -120,10 +120,16 @@
                     <i class="fa-solid fa-trash"></i> Quitar foto
                 </button>
             </div>
-            <button v-else type="button" class="btn btn-outline-primary btn-lg w-100" @click="$refs.inputFoto.click()">
-                <i class="fa-solid fa-camera"></i> Hacer o subir foto
-            </button>
-            <input ref="inputFoto" type="file" accept="image/*" class="d-none" @change="onFotoSeleccionada">
+            <div v-else class="d-flex gap-2">
+                <button type="button" class="btn btn-outline-primary btn-lg flex-fill" @click="$refs.inputFotoCamara.click()">
+                    <i class="fa-solid fa-camera"></i> Hacer foto
+                </button>
+                <button type="button" class="btn btn-outline-primary btn-lg flex-fill" @click="$refs.inputFotoGaleria.click()">
+                    <i class="fa-solid fa-image"></i> Subir foto
+                </button>
+            </div>
+            <input ref="inputFotoCamara" type="file" accept="image/*" capture="environment" class="d-none" @change="onFotoSeleccionada">
+            <input ref="inputFotoGaleria" type="file" accept="image/*" class="d-none" @change="onFotoSeleccionada">
         </div>
 
         <div class="col-12">

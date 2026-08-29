@@ -146,9 +146,9 @@
             <img :src="fotoPreviewUrl" alt="Foto del paquete" class="cr-foto-preview img-thumbnail">
           </div>
           <button type="button" class="cr-foto-btn" @click="$refs.inputFoto.click()">
-            <i class="fa-solid fa-camera"></i> {{ fotoPreviewUrl ? 'Cambiar foto' : 'Hacer foto' }} <span class="opt">(opcional)</span>
+            <i class="fa-solid fa-camera"></i> {{ fotoPreviewUrl ? 'Cambiar foto' : 'Hacer o subir foto' }} <span class="opt">(opcional)</span>
           </button>
-          <input ref="inputFoto" type="file" accept="image/*" capture="environment" class="d-none" @change="onFotoSeleccionada">
+          <input ref="inputFoto" type="file" accept="image/*" class="d-none" @change="onFotoSeleccionada">
         </div>
 
         <div class="cr-toggle-row">

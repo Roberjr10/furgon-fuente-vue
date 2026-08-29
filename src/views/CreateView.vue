@@ -121,9 +121,9 @@
                 </button>
             </div>
             <button v-else type="button" class="btn btn-outline-primary btn-lg w-100" @click="$refs.inputFoto.click()">
-                <i class="fa-solid fa-camera"></i> Hacer foto
+                <i class="fa-solid fa-camera"></i> Hacer o subir foto
             </button>
-            <input ref="inputFoto" type="file" accept="image/*" capture="environment" class="d-none" @change="onFotoSeleccionada">
+            <input ref="inputFoto" type="file" accept="image/*" class="d-none" @change="onFotoSeleccionada">
         </div>
 
         <div class="col-12">

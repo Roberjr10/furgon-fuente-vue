@@ -89,10 +89,16 @@
             <div v-if="fotoPreviewUrl" class="mb-2 text-center">
                 <img :src="fotoPreviewUrl" alt="Foto del paquete" class="foto-preview img-thumbnail">
             </div>
-            <button type="button" class="btn btn-outline-primary btn-lg w-100" @click="$refs.inputFoto.click()">
-                <i class="fa-solid fa-camera"></i> {{ fotoPreviewUrl ? 'Cambiar foto' : 'Hacer o subir foto' }}
-            </button>
-            <input ref="inputFoto" type="file" accept="image/*" class="d-none" @change="onFotoSeleccionada">
+            <div class="d-flex gap-2">
+                <button type="button" class="btn btn-outline-primary btn-lg flex-fill" @click="$refs.inputFotoCamara.click()">
+                    <i class="fa-solid fa-camera"></i> {{ fotoPreviewUrl ? 'Cambiar' : 'Hacer foto' }}
+                </button>
+                <button type="button" class="btn btn-outline-primary btn-lg flex-fill" @click="$refs.inputFotoGaleria.click()">
+                    <i class="fa-solid fa-image"></i> Subir foto
+                </button>
+            </div>
+            <input ref="inputFotoCamara" type="file" accept="image/*" capture="environment" class="d-none" @change="onFotoSeleccionada">
+            <input ref="inputFotoGaleria" type="file" accept="image/*" class="d-none" @change="onFotoSeleccionada">
         </div>
 
         <div class="col-12">

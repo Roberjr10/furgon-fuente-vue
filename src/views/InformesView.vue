@@ -30,15 +30,26 @@
             <p class="text-muted mb-1">{{ formatoFecha(informe.fecha_generado) }}</p>
             <p class="mb-0"><i class="fa-solid fa-box"></i> {{ informe.total_cajas }} caja(s)</p>
           </div>
-          <button
-            class="btn btn-primary btn-lg"
-            :disabled="descargando === informe.id"
-            @click="descargar(informe)"
-          >
-            <span v-if="descargando === informe.id" class="spinner-border spinner-border-sm"></span>
-            <i v-else class="fa-solid fa-download"></i>
-            Descargar
-          </button>
+          <div class="d-flex flex-column gap-2">
+            <button
+              class="btn btn-primary btn-lg"
+              :disabled="descargando === informe.id"
+              @click="descargar(informe)"
+            >
+              <span v-if="descargando === informe.id" class="spinner-border spinner-border-sm"></span>
+              <i v-else class="fa-solid fa-download"></i>
+              Descargar
+            </button>
+            <button
+              class="btn btn-outline-danger"
+              :disabled="borrando === informe.id"
+              @click="borrar(informe)"
+            >
+              <span v-if="borrando === informe.id" class="spinner-border spinner-border-sm"></span>
+              <i v-else class="fa-solid fa-trash"></i>
+              Borrar
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -46,15 +57,17 @@
 </template>
 
 <script>
-import { listarInformes, obtenerUrlInformePdf, descargarBlobUrl } from '../utilInformes';
+import { listarInformes, obtenerUrlInformePdf, descargarBlobUrl, borrarInforme } from '../utilInformes';
 import { show_alerta } from '../funciones';
+import Swal from 'sweetalert2';
 
 export default {
   data() {
     return {
       informes: [],
       cargando: true,
-      descargando: null
+      descargando: null,
+      borrando: null
     };
   },
   async mounted() {
@@ -82,6 +95,31 @@ export default {
         show_alerta('No se pudo descargar el informe', 'error');
       } finally {
         this.descargando = null;
+      }
+    },
+    async borrar(informe) {
+      const resultado = await Swal.fire({
+        title: `¿Borrar el informe #${informe.id}?`,
+        text: 'Esta acción no se puede deshacer.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: '<i class="fa-solid fa-trash"></i> Sí, borrar',
+        cancelButtonText: 'Cancelar',
+        customClass: { confirmButton: 'btn btn-danger m-2', cancelButton: 'btn btn-secondary m-2' },
+        buttonsStyling: false
+      });
+      if (!resultado.isConfirmed) return;
+
+      this.borrando = informe.id;
+      try {
+        await borrarInforme(informe.id);
+        this.informes = this.informes.filter(i => i.id !== informe.id);
+        show_alerta('Informe borrado', 'success');
+      } catch (error) {
+        console.error('Error al borrar el informe:', error);
+        show_alerta('No se pudo borrar el informe', 'error');
+      } finally {
+        this.borrando = null;
       }
     },
     formatoFecha(valor) {

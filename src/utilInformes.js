@@ -26,6 +26,10 @@ export async function obtenerUrlInformePdf(informeId) {
     return URL.createObjectURL(respuesta.data);
 }
 
+export async function borrarInforme(informeId) {
+    await axios.delete(`${process.env.VUE_APP_API_URL}/informes/${informeId}`);
+}
+
 export function descargarBlobUrl(url, nombreArchivo) {
     const enlace = document.createElement('a');
     enlace.href = url;

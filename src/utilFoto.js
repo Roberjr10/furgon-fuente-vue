@@ -3,7 +3,7 @@ import axios from 'axios';
 // Redimensiona y comprime una foto en el propio movil antes de subirla.
 // Una foto de camara (3-8MB) queda normalmente en ~100-300KB en JPEG,
 // sin perdida perceptible para ver el estado de un paquete.
-export function comprimirImagen(archivo, maxDimension = 1280, calidad = 0.75) {
+export function comprimirImagen(archivo, maxDimension = 1024, calidad = 0.6) {
     return new Promise((resolve, reject) => {
         const lector = new FileReader();
         lector.onerror = () => reject(new Error('No se pudo leer el archivo'));

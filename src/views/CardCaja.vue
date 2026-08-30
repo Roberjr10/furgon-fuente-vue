@@ -24,8 +24,8 @@
             v-if="!modoSeleccion"
             type="button"
             class="photo-btn"
-            title="Ver foto"
-            aria-label="Ver foto"
+            title="Ver fotos"
+            aria-label="Ver fotos"
             @click.stop="verFoto"
           >
             <i class="fa-solid fa-camera"></i>
@@ -141,7 +141,7 @@
         </div>
       </div>
 
-      <!-- Lightbox: solo la foto, grande, con opción de descargar -->
+      <!-- Lightbox: todas las fotos de la caja, con opción de descargar cada una -->
       <div
         v-if="mostrarLightbox"
         class="modal fade show d-block"
@@ -152,25 +152,24 @@
         <div class="modal-dialog modal-dialog-centered">
           <div class="modal-content shadow-lg rounded-4">
             <div class="modal-header bg-primary text-white">
-              <h4 class="modal-title">Foto de la caja {{ caja.codigoCaja || ('#' + caja.id) }}</h4>
+              <h4 class="modal-title">Fotos de la caja {{ caja.codigoCaja || ('#' + caja.id) }}</h4>
               <button type="button" class="btn-close btn-close-white" @click="cerrarLightbox"></button>
             </div>
             <div class="modal-body text-center">
               <div v-if="cargandoFotoLightbox" class="my-4">
                 <div class="spinner-border text-primary" role="status"></div>
-                <p class="text-muted fs-5 mt-2">Cargando foto...</p>
+                <p class="text-muted fs-5 mt-2">Cargando fotos...</p>
               </div>
-              <img v-else-if="fotoUrl" :src="fotoUrl" alt="Foto del paquete" class="foto-lightbox img-thumbnail">
+              <div v-else-if="fotos.length" class="fotos-lightbox-grid">
+                <div v-for="foto in fotos" :key="foto.id" class="foto-lightbox-item">
+                  <img :src="foto.url" alt="Foto del paquete" class="foto-lightbox img-thumbnail">
+                  <button type="button" class="btn btn-primary btn-sm mt-1" @click="abrirFoto(foto.url)">
+                    <i class="fa-solid fa-up-right-from-square"></i> Ver / guardar
+                  </button>
+                </div>
+              </div>
             </div>
             <div class="modal-footer d-grid gap-2 d-sm-flex justify-content-sm-end">
-              <a
-                v-if="fotoUrl"
-                :href="fotoUrl"
-                :download="'caja-' + (caja.codigoCaja || caja.id) + '.jpg'"
-                class="btn btn-primary btn-lg"
-              >
-                <i class="fa-solid fa-download"></i> Descargar
-              </a>
               <button class="btn btn-secondary btn-lg" @click="cerrarLightbox">
                 <i class="fa-solid fa-xmark"></i> Cerrar
               </button>
@@ -184,7 +183,7 @@
 </template>
 
 <script>
-import { obtenerUrlFotoCaja } from '../utilFoto';
+import { listarFotosCaja, obtenerUrlFoto } from '../utilFoto';
 import { show_alerta } from '../funciones';
 
 export default {
@@ -200,13 +199,13 @@ export default {
     return {
       mostrarModal: false,
       mostrarLightbox: false,
-      fotoUrl: null,
-      fotoIntentada: false,
+      fotos: [],
+      fotosIntentadas: false,
       cargandoFotoLightbox: false
     };
   },
   beforeUnmount() {
-    if (this.fotoUrl) URL.revokeObjectURL(this.fotoUrl);
+    this.fotos.forEach(f => URL.revokeObjectURL(f.url));
   },
   methods: {
     alTocarCard() {
@@ -224,19 +223,20 @@ export default {
     },
     async verFoto() {
       this.mostrarLightbox = true;
-      if (!this.fotoIntentada) {
+      if (!this.fotosIntentadas) {
         this.cargandoFotoLightbox = true;
         try {
-          // obtenerUrlFotoCaja ya distingue "no tiene foto" (404 -> null)
-          // de un error real; aqui solo llega un error real (401, 500, etc).
-          this.fotoUrl = await obtenerUrlFotoCaja(this.caja.id);
-          this.fotoIntentada = true;
+          const ids = await listarFotosCaja(this.caja.id);
+          this.fotos = await Promise.all(
+            ids.map(async fotoId => ({ id: fotoId, url: await obtenerUrlFoto(fotoId) }))
+          );
+          this.fotosIntentadas = true;
         } catch (error) {
-          console.error('Error al cargar la foto:', error);
+          console.error('Error al cargar las fotos:', error);
           this.mostrarLightbox = false;
           this.cargandoFotoLightbox = false;
           if (!error.response || error.response.status !== 401) {
-            show_alerta('No se pudo cargar la foto', 'error');
+            show_alerta('No se pudieron cargar las fotos', 'error');
           }
           // si es 401 (sesion expirada), el interceptor global de axios
           // ya cierra sesion y redirige al login
@@ -245,13 +245,16 @@ export default {
         this.cargandoFotoLightbox = false;
       }
 
-      if (!this.fotoUrl) {
+      if (!this.fotos.length) {
         this.mostrarLightbox = false;
-        show_alerta('Esta caja todavía no tiene foto', 'info');
+        show_alerta('Esta caja todavía no tiene fotos', 'info');
       }
     },
     cerrarLightbox() {
       this.mostrarLightbox = false;
+    },
+    abrirFoto(url) {
+      window.open(url, '_blank');
     },
     formatoImporte(valor) {
       const n = Number(valor);
@@ -301,9 +304,18 @@ export default {
   flex-shrink: 0;
 }
 
+.fotos-lightbox-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
+  max-height: 65vh;
+  overflow-y: auto;
+}
+.foto-lightbox-item { display: flex; flex-direction: column; align-items: center; }
+
 .foto-lightbox {
   max-width: 100%;
-  max-height: 60vh;
+  max-height: 40vh;
   object-fit: contain;
 }
 

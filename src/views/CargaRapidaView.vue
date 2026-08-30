@@ -142,20 +142,25 @@
         </div>
 
         <div class="cr-field">
-          <div v-if="fotoPreviewUrl" class="mb-2 text-center">
-            <img :src="fotoPreviewUrl" alt="Foto del paquete" class="cr-foto-preview img-thumbnail">
+          <div v-if="fotos.length" class="cr-fotos-grid mb-2">
+            <div v-for="(foto, i) in fotos" :key="i" class="cr-foto-miniatura">
+              <img :src="foto.previewUrl" alt="Foto del paquete">
+              <button type="button" class="cr-foto-quitar" title="Quitar" @click="quitarFoto(i)">
+                <i class="fa-solid fa-xmark"></i>
+              </button>
+            </div>
           </div>
           <div class="d-flex gap-2">
             <button type="button" class="cr-foto-btn flex-fill" @click="$refs.inputFotoCamara.click()">
-              <i class="fa-solid fa-camera"></i> {{ fotoPreviewUrl ? 'Cambiar' : 'Hacer foto' }}
+              <i class="fa-solid fa-camera"></i> Hacer foto
             </button>
             <button type="button" class="cr-foto-btn flex-fill" @click="$refs.inputFotoGaleria.click()">
-              <i class="fa-solid fa-image"></i> Subir foto
+              <i class="fa-solid fa-image"></i> Subir foto(s)
             </button>
           </div>
           <span class="opt d-block text-center mt-1">(opcional)</span>
           <input ref="inputFotoCamara" type="file" accept="image/*" capture="environment" class="d-none" @change="onFotoSeleccionada">
-          <input ref="inputFotoGaleria" type="file" accept="image/*" class="d-none" @change="onFotoSeleccionada">
+          <input ref="inputFotoGaleria" type="file" accept="image/*" multiple class="d-none" @change="onFotoSeleccionada">
         </div>
 
         <div class="cr-toggle-row">
@@ -209,7 +214,7 @@
 
 <script>
 import { show_alerta } from '../funciones';
-import { comprimirImagen, subirFotoCaja } from '../utilFoto';
+import { comprimirImagen, subirFotosCaja } from '../utilFoto';
 import axios from 'axios';
 
 function camposVacios() {
@@ -217,7 +222,7 @@ function camposVacios() {
     codigoCaja: '', destinatario: '', direccion: '', telefonoDestinatario: '',
     descripcion: '', importe: '', importeCrini: '',
     yaPagado: false, fechaPagado: '', importePagado: '',
-    fotoBlob: null, fotoPreviewUrl: null
+    fotos: []
   };
 }
 
@@ -240,8 +245,8 @@ export default {
     }
   },
   beforeUnmount() {
-    if (this.fotoPreviewUrl) URL.revokeObjectURL(this.fotoPreviewUrl);
-    this.cajasGuardadas.forEach(c => { if (c.fotoPreviewUrl) URL.revokeObjectURL(c.fotoPreviewUrl); });
+    this.fotos.forEach(f => URL.revokeObjectURL(f.previewUrl));
+    this.cajasGuardadas.forEach(c => c.fotos.forEach(f => URL.revokeObjectURL(f.previewUrl)));
   },
   methods: {
     formatoImporte(valor) {
@@ -256,15 +261,20 @@ export default {
       }
     },
     async onFotoSeleccionada(event) {
-      const archivo = event.target.files[0];
-      if (!archivo) return;
-      try {
-        this.fotoBlob = await comprimirImagen(archivo);
-        if (this.fotoPreviewUrl) URL.revokeObjectURL(this.fotoPreviewUrl);
-        this.fotoPreviewUrl = URL.createObjectURL(this.fotoBlob);
-      } catch (error) {
-        show_alerta('No se pudo procesar la foto', 'error');
+      const archivos = Array.from(event.target.files || []);
+      event.target.value = '';
+      for (const archivo of archivos) {
+        try {
+          const blob = await comprimirImagen(archivo);
+          this.fotos.push({ blob, previewUrl: URL.createObjectURL(blob) });
+        } catch (error) {
+          show_alerta('No se pudo procesar una de las fotos', 'error');
+        }
       }
+    },
+    quitarFoto(indice) {
+      URL.revokeObjectURL(this.fotos[indice].previewUrl);
+      this.fotos.splice(indice, 1);
     },
     formTieneContenido() {
       return !!(this.destinatario || this.direccion || this.telefonoDestinatario || this.descripcion || this.importe || this.importeCrini || this.codigoCaja);
@@ -285,8 +295,7 @@ export default {
         importeCrini: this.importeCrini,
         fechaPagado: this.yaPagado ? this.fechaPagado : '',
         importePagado: this.yaPagado ? this.importePagado : 0,
-        fotoBlob: this.fotoBlob,
-        fotoPreviewUrl: this.fotoPreviewUrl
+        fotos: this.fotos
       };
     },
     limpiarFormulario() {
@@ -323,15 +332,14 @@ export default {
       this.yaPagado = !!c.pagado;
       this.fechaPagado = c.fechaPagado;
       this.importePagado = c.importePagado;
-      this.fotoBlob = c.fotoBlob;
-      this.fotoPreviewUrl = c.fotoPreviewUrl;
+      this.fotos = c.fotos;
       this.editIndex = index;
       this.cajasGuardadas.splice(index, 1);
       window.scrollTo({ top: document.body.scrollHeight * 0.3, behavior: 'smooth' });
     },
     eliminarCaja(index) {
       const c = this.cajasGuardadas[index];
-      if (c.fotoPreviewUrl) URL.revokeObjectURL(c.fotoPreviewUrl);
+      c.fotos.forEach(f => URL.revokeObjectURL(f.previewUrl));
       this.cajasGuardadas.splice(index, 1);
     },
     async enviarLote() {
@@ -352,17 +360,17 @@ export default {
       this.enviando = true;
       try {
         const payload = {
-          cajas: lista.map(({ fotoBlob, fotoPreviewUrl, ...resto }) => resto)
+          cajas: lista.map(({ fotos, ...resto }) => resto)
         };
         const respuesta = await axios.post(`${process.env.VUE_APP_API_URL}/crearCajasLote`, payload);
         const ids = respuesta.data.ids || [];
 
         for (let i = 0; i < lista.length; i++) {
-          if (lista[i].fotoBlob && ids[i]) {
+          if (lista[i].fotos.length && ids[i]) {
             try {
-              await subirFotoCaja(ids[i], lista[i].fotoBlob);
+              await subirFotosCaja(ids[i], lista[i].fotos.map(f => f.blob));
             } catch (error) {
-              console.error('No se pudo subir una de las fotos:', error);
+              console.error('No se pudieron subir las fotos de una caja:', error);
             }
           }
         }
@@ -449,7 +457,19 @@ export default {
   min-width: 0;
 }
 
-.cr-foto-preview { max-width: 100%; max-height: 200px; object-fit: contain; }
+.cr-fotos-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+  gap: 6px;
+}
+.cr-foto-miniatura { position: relative; aspect-ratio: 1; }
+.cr-foto-miniatura img {
+  width: 100%; height: 100%; object-fit: cover; border-radius: 8px; border: 1px solid var(--bs-border-color);
+}
+.cr-foto-quitar {
+  position: absolute; top: -6px; right: -6px; width: 22px; height: 22px; border-radius: 50%;
+  background: var(--furgon-terracotta); color: #fff; border: none; font-size: 11px; line-height: 1;
+}
 .cr-foto-btn {
   width: 100%; border: 1.5px solid var(--furgon-teal); color: var(--furgon-teal); background: #fff;
   border-radius: 10px; height: 42px; font-size: 13px; font-weight: 500;

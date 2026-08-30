@@ -37,27 +37,28 @@ export function comprimirImagen(archivo, maxDimension = 1280, calidad = 0.75) {
     });
 }
 
-export function subirFotoCaja(id, blob) {
+// Sube una o varias fotos de una sola vez (todas quedan guardadas, no se
+// pisan entre sí como pasaba cuando solo se podía tener una foto por caja).
+export function subirFotosCaja(id, blobs) {
     const formData = new FormData();
-    formData.append('foto', blob, 'foto.jpg');
-    return axios.post(`${process.env.VUE_APP_API_URL}/cajas/${id}/foto`, formData);
+    blobs.forEach((blob, i) => formData.append('fotos', blob, `foto${i}.jpg`));
+    return axios.post(`${process.env.VUE_APP_API_URL}/cajas/${id}/fotos`, formData);
 }
 
-// Devuelve una URL local (blob:) lista para usar en <img src>, o null si la caja no tiene foto.
-export async function obtenerUrlFotoCaja(id) {
-    try {
-        const respuesta = await axios.get(`${process.env.VUE_APP_API_URL}/cajas/${id}/foto`, {
-            responseType: 'blob'
-        });
-        return URL.createObjectURL(respuesta.data);
-    } catch (error) {
-        if (error.response && error.response.status === 404) {
-            return null;
-        }
-        throw error;
-    }
+// Ids de todas las fotos guardadas de una caja.
+export async function listarFotosCaja(id) {
+    const respuesta = await axios.get(`${process.env.VUE_APP_API_URL}/cajas/${id}/fotos`);
+    return respuesta.data;
 }
 
-export function borrarFotoCaja(id) {
-    return axios.delete(`${process.env.VUE_APP_API_URL}/cajas/${id}/foto`);
+// Devuelve una URL local (blob:) lista para usar en <img src>.
+export async function obtenerUrlFoto(fotoId) {
+    const respuesta = await axios.get(`${process.env.VUE_APP_API_URL}/fotos/${fotoId}`, {
+        responseType: 'blob'
+    });
+    return URL.createObjectURL(respuesta.data);
+}
+
+export function borrarFoto(fotoId) {
+    return axios.delete(`${process.env.VUE_APP_API_URL}/fotos/${fotoId}`);
 }

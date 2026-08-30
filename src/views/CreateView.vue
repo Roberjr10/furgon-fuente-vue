@@ -113,23 +113,25 @@
         </div>
 
         <div class="col-12">
-            <label class="form-label">Foto del paquete (opcional)</label>
-            <div v-if="fotoPreviewUrl" class="mb-2 text-center">
-                <img :src="fotoPreviewUrl" alt="Foto del paquete" class="foto-preview img-thumbnail">
-                <button type="button" class="btn btn-outline-danger btn-lg d-block w-100 mt-2" @click="quitarFoto">
-                    <i class="fa-solid fa-trash"></i> Quitar foto
-                </button>
+            <label class="form-label">Fotos del paquete <span class="text-muted fw-normal">(opcional)</span></label>
+            <div v-if="fotos.length" class="fotos-grid mb-2">
+                <div v-for="(foto, i) in fotos" :key="i" class="foto-miniatura">
+                    <img :src="foto.previewUrl" alt="Foto del paquete">
+                    <button type="button" class="foto-quitar" title="Quitar" @click="quitarFoto(i)">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
             </div>
-            <div v-else class="d-flex gap-2">
+            <div class="d-flex gap-2">
                 <button type="button" class="btn btn-outline-primary btn-lg flex-fill" @click="$refs.inputFotoCamara.click()">
                     <i class="fa-solid fa-camera"></i> Hacer foto
                 </button>
                 <button type="button" class="btn btn-outline-primary btn-lg flex-fill" @click="$refs.inputFotoGaleria.click()">
-                    <i class="fa-solid fa-image"></i> Subir foto
+                    <i class="fa-solid fa-image"></i> Subir foto(s)
                 </button>
             </div>
             <input ref="inputFotoCamara" type="file" accept="image/*" capture="environment" class="d-none" @change="onFotoSeleccionada">
-            <input ref="inputFotoGaleria" type="file" accept="image/*" class="d-none" @change="onFotoSeleccionada">
+            <input ref="inputFotoGaleria" type="file" accept="image/*" multiple class="d-none" @change="onFotoSeleccionada">
         </div>
 
         <div class="col-12">
@@ -210,7 +212,7 @@
 
 <script>
 import { show_alerta, enviarSolicitud } from '../funciones';
-import { comprimirImagen, subirFotoCaja } from '../utilFoto';
+import { comprimirImagen, subirFotosCaja } from '../utilFoto';
 import { buscarSugerenciasRemitente, buscarSugerenciasDestinatario } from '../utilSugerencias';
 
 export default{
@@ -230,15 +232,14 @@ export default{
             yaPagado: false,
             fechaPagado: '',
             importePagado: '',
-            fotoBlob: null,
-            fotoPreviewUrl: null,
+            fotos: [],
             sugerenciasRemitente: [],
             sugerenciasDestinatario: [],
             url: `${process.env.VUE_APP_API_URL}/crearCaja/`
         }
     },
     beforeUnmount(){
-        if (this.fotoPreviewUrl) URL.revokeObjectURL(this.fotoPreviewUrl);
+        this.fotos.forEach(f => URL.revokeObjectURL(f.previewUrl));
     },
     methods: {
         buscarRemitenteDebounced(){
@@ -291,21 +292,20 @@ export default{
             }
         },
         async onFotoSeleccionada(event){
-            const archivo = event.target.files[0];
-            if(!archivo) return;
-            try{
-                this.fotoBlob = await comprimirImagen(archivo);
-                if (this.fotoPreviewUrl) URL.revokeObjectURL(this.fotoPreviewUrl);
-                this.fotoPreviewUrl = URL.createObjectURL(this.fotoBlob);
-            }catch(error){
-                show_alerta('No se pudo procesar la foto', 'error');
+            const archivos = Array.from(event.target.files || []);
+            event.target.value = '';
+            for (const archivo of archivos) {
+                try{
+                    const blob = await comprimirImagen(archivo);
+                    this.fotos.push({ blob, previewUrl: URL.createObjectURL(blob) });
+                }catch(error){
+                    show_alerta('No se pudo procesar una de las fotos', 'error');
+                }
             }
         },
-        quitarFoto(){
-            if (this.fotoPreviewUrl) URL.revokeObjectURL(this.fotoPreviewUrl);
-            this.fotoBlob = null;
-            this.fotoPreviewUrl = null;
-            this.$refs.inputFoto.value = '';
+        quitarFoto(indice){
+            URL.revokeObjectURL(this.fotos[indice].previewUrl);
+            this.fotos.splice(indice, 1);
         },
         guardar(event){
             event.preventDefault();
@@ -331,8 +331,8 @@ export default{
                 fechaPagado: this.yaPagado ? this.fechaPagado : '',
                 importePagado: this.yaPagado ? this.importePagado : 0
             }
-            const subirFoto = this.fotoBlob
-                ? (creada) => subirFotoCaja(creada.id, this.fotoBlob)
+            const subirFoto = this.fotos.length
+                ? (creada) => subirFotosCaja(creada.id, this.fotos.map(f => f.blob))
                 : null;
             enviarSolicitud('POST',parametros,this.url,'Caja guardada',subirFoto)
         }
@@ -354,10 +354,34 @@ export default{
     border-radius: 0 0 8px 8px;
 }
 
-.foto-preview {
-    max-width: 100%;
-    max-height: 260px;
-    object-fit: contain;
+.fotos-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+    gap: 8px;
+}
+.foto-miniatura {
+    position: relative;
+    aspect-ratio: 1;
+}
+.foto-miniatura img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 8px;
+    border: 1px solid var(--bs-border-color);
+}
+.foto-quitar {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--bs-danger);
+    color: #fff;
+    border: none;
+    font-size: 12px;
+    line-height: 1;
 }
 
 .submit-bar {

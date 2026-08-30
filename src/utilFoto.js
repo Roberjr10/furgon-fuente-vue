@@ -62,3 +62,9 @@ export async function obtenerUrlFoto(fotoId) {
 export function borrarFoto(fotoId) {
     return axios.delete(`${process.env.VUE_APP_API_URL}/fotos/${fotoId}`);
 }
+
+// Espacio total (bytes) y cantidad de todas las fotos subidas.
+export async function obtenerAlmacenamientoFotos() {
+    const respuesta = await axios.get(`${process.env.VUE_APP_API_URL}/fotos/almacenamiento`);
+    return respuesta.data;
+}

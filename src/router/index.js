@@ -6,6 +6,7 @@ import SearchView from '../views/SearchView.vue';
 import InformesView from '../views/InformesView.vue';
 import LoginView from '../views/LoginView.vue';
 import CargaRapidaView from '../views/CargaRapidaView.vue';
+import AlmacenamientoView from '../views/AlmacenamientoView.vue';
 
 const routes = [
   {
@@ -54,6 +55,12 @@ const routes = [
     path: '/carga-rapida',
     name: 'carga-rapida',
     component: CargaRapidaView,
+    meta: { requiereAuth: true } // 🔒 protegida
+  },
+  {
+    path: '/almacenamiento',
+    name: 'almacenamiento',
+    component: AlmacenamientoView,
     meta: { requiereAuth: true } // 🔒 protegida
   }
 ];

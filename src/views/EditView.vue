@@ -81,24 +81,35 @@
         </div>
 
         <div class="col-12">
-            <label class="form-label">Foto del paquete (opcional)</label>
+            <label class="form-label">Fotos del paquete <span class="text-muted fw-normal">(opcional)</span></label>
             <div v-if="cargandoFoto" class="text-center my-2">
                 <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
-                <span class="text-muted ms-2">Cargando foto...</span>
+                <span class="text-muted ms-2">Cargando fotos...</span>
             </div>
-            <div v-if="fotoPreviewUrl" class="mb-2 text-center">
-                <img :src="fotoPreviewUrl" alt="Foto del paquete" class="foto-preview img-thumbnail">
+            <div v-if="fotosExistentes.length || fotosNuevas.length" class="fotos-grid mb-2">
+                <div v-for="foto in fotosExistentes" :key="'g-' + foto.id" class="foto-miniatura">
+                    <img :src="foto.url" alt="Foto del paquete">
+                    <button type="button" class="foto-quitar" title="Quitar" @click="quitarFotoExistente(foto.id)">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+                <div v-for="(foto, i) in fotosNuevas" :key="'n-' + i" class="foto-miniatura">
+                    <img :src="foto.previewUrl" alt="Foto del paquete">
+                    <button type="button" class="foto-quitar" title="Quitar" @click="quitarFotoNueva(i)">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
             </div>
             <div class="d-flex gap-2">
                 <button type="button" class="btn btn-outline-primary btn-lg flex-fill" @click="$refs.inputFotoCamara.click()">
-                    <i class="fa-solid fa-camera"></i> {{ fotoPreviewUrl ? 'Cambiar' : 'Hacer foto' }}
+                    <i class="fa-solid fa-camera"></i> Hacer foto
                 </button>
                 <button type="button" class="btn btn-outline-primary btn-lg flex-fill" @click="$refs.inputFotoGaleria.click()">
-                    <i class="fa-solid fa-image"></i> Subir foto
+                    <i class="fa-solid fa-image"></i> Subir foto(s)
                 </button>
             </div>
             <input ref="inputFotoCamara" type="file" accept="image/*" capture="environment" class="d-none" @change="onFotoSeleccionada">
-            <input ref="inputFotoGaleria" type="file" accept="image/*" class="d-none" @change="onFotoSeleccionada">
+            <input ref="inputFotoGaleria" type="file" accept="image/*" multiple class="d-none" @change="onFotoSeleccionada">
         </div>
 
         <div class="col-12">
@@ -179,7 +190,7 @@
 
 <script>
 import { show_alerta, enviarSolicitud } from '../funciones';
-import { comprimirImagen, subirFotoCaja, obtenerUrlFotoCaja } from '../utilFoto';
+import { comprimirImagen, subirFotosCaja, listarFotosCaja, obtenerUrlFoto, borrarFoto } from '../utilFoto';
 import { useRoute } from 'vue-router';
 import axios from 'axios';
 
@@ -202,8 +213,8 @@ export default{
             yaPagado: false,
             fechaPagado: '',
             importePagado: '',
-            fotoBlob: null,
-            fotoPreviewUrl: null,
+            fotosExistentes: [],
+            fotosNuevas: [],
             cargandoFoto: false,
             url:  `${process.env.VUE_APP_API_URL}`
 
@@ -217,7 +228,8 @@ export default{
         this.cargarFotoExistente(this.id);
     },
     beforeUnmount(){
-        if (this.fotoPreviewUrl) URL.revokeObjectURL(this.fotoPreviewUrl);
+        this.fotosExistentes.forEach(f => URL.revokeObjectURL(f.url));
+        this.fotosNuevas.forEach(f => URL.revokeObjectURL(f.previewUrl));
     },
     methods: {
         onCambioPagado(){
@@ -229,22 +241,42 @@ export default{
         async cargarFotoExistente(id){
             this.cargandoFoto = true;
             try{
-                this.fotoPreviewUrl = await obtenerUrlFotoCaja(id);
+                const ids = await listarFotosCaja(id);
+                this.fotosExistentes = await Promise.all(
+                    ids.map(async fotoId => ({ id: fotoId, url: await obtenerUrlFoto(fotoId) }))
+                );
             }catch(error){
-                console.error('Error al cargar la foto:', error);
+                console.error('Error al cargar las fotos:', error);
             }finally{
                 this.cargandoFoto = false;
             }
         },
-        async onFotoSeleccionada(event){
-            const archivo = event.target.files[0];
-            if(!archivo) return;
+        async quitarFotoExistente(fotoId){
             try{
-                this.fotoBlob = await comprimirImagen(archivo);
-                if (this.fotoPreviewUrl) URL.revokeObjectURL(this.fotoPreviewUrl);
-                this.fotoPreviewUrl = URL.createObjectURL(this.fotoBlob);
+                await borrarFoto(fotoId);
+                const i = this.fotosExistentes.findIndex(f => f.id === fotoId);
+                if (i !== -1){
+                    URL.revokeObjectURL(this.fotosExistentes[i].url);
+                    this.fotosExistentes.splice(i, 1);
+                }
             }catch(error){
-                show_alerta('No se pudo procesar la foto', 'error');
+                show_alerta('No se pudo borrar la foto', 'error');
+            }
+        },
+        quitarFotoNueva(indice){
+            URL.revokeObjectURL(this.fotosNuevas[indice].previewUrl);
+            this.fotosNuevas.splice(indice, 1);
+        },
+        async onFotoSeleccionada(event){
+            const archivos = Array.from(event.target.files || []);
+            event.target.value = '';
+            for (const archivo of archivos) {
+                try{
+                    const blob = await comprimirImagen(archivo);
+                    this.fotosNuevas.push({ blob, previewUrl: URL.createObjectURL(blob) });
+                }catch(error){
+                    show_alerta('No se pudo procesar una de las fotos', 'error');
+                }
             }
         },
         getCaja(id){
@@ -294,7 +326,9 @@ export default{
                 fechaPagado: this.yaPagado ? this.fechaPagado : '',
                 importePagado: this.yaPagado ? this.importePagado : 0
             }
-            const subirFoto = this.fotoBlob ? () => subirFotoCaja(this.id, this.fotoBlob) : null;
+            const subirFoto = this.fotosNuevas.length
+                ? () => subirFotosCaja(this.id, this.fotosNuevas.map(f => f.blob))
+                : null;
             enviarSolicitud('PUT',parametros,this.urlModificar,'Caja actualizada',subirFoto)
         }
     }
@@ -303,10 +337,34 @@ export default{
 </script>
 
 <style scoped>
-.foto-preview {
-    max-width: 100%;
-    max-height: 260px;
-    object-fit: contain;
+.fotos-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+    gap: 8px;
+}
+.foto-miniatura {
+    position: relative;
+    aspect-ratio: 1;
+}
+.foto-miniatura img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 8px;
+    border: 1px solid var(--bs-border-color);
+}
+.foto-quitar {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--bs-danger);
+    color: #fff;
+    border: none;
+    font-size: 12px;
+    line-height: 1;
 }
 
 .submit-bar {
